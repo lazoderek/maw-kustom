@@ -1,0 +1,48 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "page-info",
+      "blocks": {
+        "image_PA93AQ": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/info-0.jpg"
+          }
+        },
+        "image_C9hqUb": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/info-1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "image_PA93AQ",
+        "image_C9hqUb"
+      ],
+      "custom_css": [
+        "/* Force the entire name to uppercase */.info-page__name {letter-spacing: 0.1em; /* Optional: adds breathing room for all-caps */}",
+        "/* Target the stars specifically to adjust their size and alignment */.info-page__name span,.info-page__name {/* This targets the stars if you wrap them in a tag, but we can also use a broad character selector if needed */}"
+      ],
+      "settings": {
+        "name": "makayla <text style=\"text-transform: uppercase;\">M★A★W<text></text> <text style=\"text-transform: lowercase;\">wray<text></text></text></text>",
+        "tagline": "designer & maker",
+        "bio": "<p>Based in [city], Makayla Wray is a self-taught designer and maker whose practice spans textile design, slow fashion, and wearable art.</p><p>Each piece is made to order from her studio, drawing on years of experience working with natural materials and an obsessive attention to construction.</p>",
+        "contact_label": "get in touch",
+        "contact_url": "shopify://pages/info"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

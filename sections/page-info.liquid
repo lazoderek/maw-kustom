@@ -1,0 +1,334 @@
+{% comment %}
+  Info page — same viewport shell as home-hero / all-products-horizontal.
+  Mirrors all-products exactly: section → frame → track → columns.
+{% endcomment %}
+
+<section class="info-page" data-section-id="{{ section.id }}">
+  <div class="info-page__frame">
+    <div class="info-page__track">
+
+      {%- comment -%} ── Left: image slideshow card ── {%- endcomment -%}
+      <div class="info-page__card">
+        <div class="info-page__img-wrapper" id="info-page-img-wrapper-{{ section.id }}">
+
+          {%- if section.blocks.size > 0 -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'image' and block.settings.image != blank -%}
+                <img
+                  class="info-page__img{% if forloop.first %} is-active{% endif %}"
+                  src="{{ block.settings.image | image_url: width: 1200 }}"
+                  alt="{{ block.settings.image.alt | default: shop.name | escape }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  {{ block.shopify_attributes }}
+                >
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            <div class="info-page__placeholder"></div>
+          {%- endif -%}
+
+          {%- assign image_count = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'image' and block.settings.image != blank -%}
+              {%- assign image_count = image_count | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- if image_count > 1 -%}
+            <button class="info-page__arrow info-page__arrow--prev" type="button" aria-label="Previous image" data-arrow="prev" hidden>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11L5 7l4-4"/></svg>
+            </button>
+            <button class="info-page__arrow info-page__arrow--next" type="button" aria-label="Next image" data-arrow="next">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l4 4-4 4"/></svg>
+            </button>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- comment -%} ── Right: bio text panel ── {%- endcomment -%}
+      <div class="info-page__bio">
+        {%- if section.settings.name != blank -%}
+          <h1 class="info-page__name">{{ section.settings.name }}</h1>
+        {%- endif -%}
+
+        {%- if section.settings.tagline != blank -%}
+          <p class="info-page__tagline">{{ section.settings.tagline }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.bio != blank -%}
+          <div class="info-page__body">{{ section.settings.bio }}</div>
+        {%- endif -%}
+
+        {%- if section.settings.contact_label != blank and section.settings.contact_url != blank -%}
+          <a class="info-page__contact-link" href="{{ section.settings.contact_url }}">
+            {{ section.settings.contact_label }}
+          </a>
+        {%- endif -%}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  #shopify-section-{{ section.id }} {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 1. Ensure the section is a flex container that centers everything */
+  .info-page {
+    width: 100%;
+    height: calc(100vh - clamp(2rem, 6vw, 6rem)); 
+    display: flex;
+    align-items: center;    /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    box-sizing: border-box;
+  }
+
+  /* 2. Update the Frame to center its content */
+  .info-page__frame {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;    /* This is the key for Y-axis centering */
+    justify-content: center; /* This is the key for X-axis centering */
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* 3. The Track: Slightly larger and centered */
+  .info-page__track {
+    display: flex;
+    max-width: 1300px; /* Increased for a bigger feel */
+    width: 90%;
+    gap: clamp(3rem, 8vw, 8rem); /* Slightly more air between image and bio */
+    align-items: center; 
+    justify-content: center;
+  }
+
+  /* 4. The Card: Bumped up the size as requested */
+  .info-page__card {
+    flex-shrink: 0;
+    height: auto;
+    width: clamp(340px, 42vw, 600px); /* Increased size range */
+    display: flex;
+    flex-direction: column;
+    background: rgba(25, 16, 9, 0.84);
+    padding: 1.5rem;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  /* 2. The Wrapper: Bring back the 1/1 Aspect Ratio */
+  .info-page__img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Restores the square shape */
+    overflow: hidden;
+    position: relative;
+    /* No margin-bottom here to keep the card bottom tight if desired */
+  }
+
+  /* 4. Placeholder also needs to be flexible */
+  .info-page__placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(232, 226, 210, 0.06);
+  }
+
+  /* 3. The Image: Ensure it stays contained within the square */
+  .info-page__img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Keeps image from stretching */
+    display: block;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .info-page__img.is-active {
+    opacity: 1;
+  }
+
+  /* ── Arrows ── */
+  .info-page__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(13, 10, 7, 0.6);
+    border: 1px solid rgba(232, 226, 210, 0.18);
+    color: #e8e2d2;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    z-index: 2;
+    padding: 0;
+  }
+
+  .info-page__img-wrapper:hover .info-page__arrow:not([hidden]) {
+    opacity: 1;
+  }
+
+  .info-page__arrow:hover {
+    background: rgba(13, 10, 7, 0.88);
+  }
+
+  .info-page__arrow--prev { left: 0.6rem; }
+  .info-page__arrow--next { right: 0.6rem; }
+
+  /* ── Right bio panel — vertically centered ── */
+  .info-page__bio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+    max-width: 600px; /* Prevents text lines from getting too long/unreadable */
+    padding: 1rem 0;
+  }
+
+  .info-page__bio::-webkit-scrollbar { display: none; }
+
+  .info-page__name {
+    font-family: 'TTHoves', sans-serif;
+    font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+    font-weight: 400;
+    color: #e8e2d2;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+
+  .info-page__tagline {
+    font-size: clamp(0.7rem, 1vw, 0.85rem);
+    letter-spacing: 0.1em;
+    color: rgba(232, 226, 210, 0.45);
+    text-transform: lowercase;
+    margin: 0;
+  }
+
+  .info-page__body {
+    font-size: clamp(0.78rem, 1.1vw, 0.92rem);
+    line-height: 1.75;
+    color: rgba(232, 226, 210, 0.65);
+  }
+
+  .info-page__body p {
+    margin: 0 0 1em;
+  }
+
+  .info-page__body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-page__contact-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    color: rgba(232, 226, 210, 0.5);
+    text-transform: lowercase;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(232, 226, 210, 0.2);
+    padding-bottom: 0.15rem;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    width: fit-content;
+  }
+
+  .info-page__contact-link:hover {
+    color: rgba(232, 226, 210, 0.85);
+    border-color: rgba(232, 226, 210, 0.55);
+  }
+</style>
+
+<script>
+  (function () {
+    var wrapper = document.getElementById('info-page-img-wrapper-{{ section.id }}');
+    if (!wrapper) return;
+
+    var imgs    = wrapper.querySelectorAll('.info-page__img');
+    var prevBtn = wrapper.querySelector('[data-arrow="prev"]');
+    var nextBtn = wrapper.querySelector('[data-arrow="next"]');
+    if (imgs.length <= 1) return;
+
+    var current = 0;
+
+    function goTo(index) {
+      imgs[current].classList.remove('is-active');
+      current = index;
+      imgs[current].classList.add('is-active');
+      if (prevBtn) prevBtn.hidden = current === 0;
+      if (nextBtn) nextBtn.hidden = current === imgs.length - 1;
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', function () {
+      if (current > 0) goTo(current - 1);
+    });
+
+    if (nextBtn) nextBtn.addEventListener('click', function () {
+      if (current < imgs.length - 1) goTo(current + 1);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Info page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "name",
+      "label": "Name",
+      "default": "makayla wray"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline / role",
+      "default": "designer & maker"
+    },
+    {
+      "type": "richtext",
+      "id": "bio",
+      "label": "Bio / experience",
+      "default": "<p>Based in [city], Makayla Wray is a self-taught designer and maker whose practice spans textile design, slow fashion, and wearable art.</p><p>Each piece is made to order from her studio, drawing on years of experience working with natural materials and an obsessive attention to construction.</p>"
+    },
+    {
+      "type": "text",
+      "id": "contact_label",
+      "label": "Contact link label",
+      "default": "get in touch"
+    },
+    {
+      "type": "url",
+      "id": "contact_url",
+      "label": "Contact link URL"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Slideshow image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Info page" }
+  ]
+}
+{% endschema %}
