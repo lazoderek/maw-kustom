@@ -18,20 +18,20 @@
             "image": "shopify://shop_images/info-0.jpg"
           }
         },
-        "image_C9hqUb": {
+        "image_ibKei7": {
           "type": "image",
           "settings": {
-            "image": "shopify://shop_images/info-1.jpg"
+            "image": "shopify://shop_images/624987025_18100231456803134_8734677006840674794_n.jpg"
           }
         }
       },
       "block_order": [
         "image_PA93AQ",
-        "image_C9hqUb"
+        "image_ibKei7"
       ],
       "custom_css": [
         "/* Force the entire name to uppercase */.info-page__name {letter-spacing: 0.1em; /* Optional: adds breathing room for all-caps */}",
-        "/* Target the stars specifically to adjust their size and alignment */.info-page__name span,.info-page__name {/* This targets the stars if you wrap them in a tag, but we can also use a broad character selector if needed */}"
+        " /* Target the stars specifically to adjust their size and alignment */.info-page__name span,.info-page__name {/* This targets the stars if you wrap them in a tag, but we can also use a broad character selector if needed */}"
       ],
       "settings": {
         "name": "makayla <text style=\"text-transform: uppercase;\">M★A★W<text></text> <text style=\"text-transform: lowercase;\">wray<text></text></text></text>",
