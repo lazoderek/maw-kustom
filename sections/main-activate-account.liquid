@@ -1,0 +1,24 @@
+<section class="auth-page section" data-section-id="{{ section.id }}">
+  <div class="container" style="max-width:480px;">
+    <h1 class="auth-page__title" data-reveal="up">Activate account</h1>
+
+    {%- form 'activate_customer_password', class: 'auth-form' -%}
+      {%- if form.errors -%}
+        <div class="auth-form__errors">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+
+      <div class="auth-form__field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="customer[password]" autocomplete="new-password" required>
+      </div>
+      <div class="auth-form__field">
+        <label for="password-confirm">Confirm password</label>
+        <input type="password" id="password-confirm" name="customer[password_confirmation]" autocomplete="new-password" required>
+      </div>
+
+      <button type="submit" class="btn btn--primary" style="align-self:flex-start;">Activate account</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}{ "name": "Activate Account", "settings": [] }{% endschema %}

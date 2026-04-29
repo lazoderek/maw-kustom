@@ -1,0 +1,36 @@
+<section class="auth-page section" data-section-id="{{ section.id }}">
+  <div class="container" style="max-width:480px;">
+    <h1 class="auth-page__title" data-reveal="up">Create account</h1>
+
+    {%- form 'create_customer', class: 'auth-form' -%}
+      {%- if form.errors -%}
+        <div class="auth-form__errors">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+
+      <div class="auth-form__field">
+        <label for="first-name">First name</label>
+        <input type="text" id="first-name" name="customer[first_name]" autocomplete="given-name" value="{{ form.first_name }}">
+      </div>
+      <div class="auth-form__field">
+        <label for="last-name">Last name</label>
+        <input type="text" id="last-name" name="customer[last_name]" autocomplete="family-name" value="{{ form.last_name }}">
+      </div>
+      <div class="auth-form__field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="customer[email]" autocomplete="email" required value="{{ form.email }}">
+      </div>
+      <div class="auth-form__field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="customer[password]" autocomplete="new-password" required>
+      </div>
+
+      <button type="submit" class="btn btn--primary" style="align-self:flex-start;">Create account</button>
+    {%- endform -%}
+
+    <p class="auth-page__alt">
+      Already have an account? <a href="{{ routes.account_login_url }}" class="auth-form__link">Sign in →</a>
+    </p>
+  </div>
+</section>
+
+{% schema %}{ "name": "Customer Register", "settings": [] }{% endschema %}

@@ -1,0 +1,64 @@
+<section class="account-page section" data-section-id="{{ section.id }}">
+  <div class="container" style="max-width:900px;">
+    <div class="account-page__header" data-reveal="up">
+      <h1 class="account-page__title">
+        Hello, {{ customer.first_name | default: customer.email }}.
+      </h1>
+      <a href="{{ routes.account_logout_url }}" class="auth-form__link">Sign out</a>
+    </div>
+
+    <div class="account-page__grid">
+      <!-- Order history -->
+      <div class="account-page__section">
+        <h2 class="account-page__section-title">Order history</h2>
+        {%- if customer.orders.size > 0 -%}
+          <table class="account-orders">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for order in customer.orders -%}
+                <tr>
+                  <td><a href="{{ order.customer_url }}" class="auth-form__link">{{ order.name }}</a></td>
+                  <td>{{ order.created_at | date: '%B %d, %Y' }}</td>
+                  <td>{{ order.financial_status_label }}</td>
+                  <td>{{ order.total_price | money }}</td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        {%- else -%}
+          <p style="color:var(--color-dust);font-style:italic;font-family:var(--font-serif);">No orders yet.</p>
+        {%- endif -%}
+      </div>
+
+      <!-- Account details -->
+      <div class="account-page__section">
+        <h2 class="account-page__section-title">Account details</h2>
+        <address style="font-style:normal;font-size:0.9rem;line-height:1.8;color:var(--color-ink-soft);">
+          {{ customer.default_address | format_address }}
+        </address>
+        <a href="{{ routes.account_addresses_url }}" class="btn btn--ghost" style="margin-top:1.25rem;display:inline-flex;">Manage addresses</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .account-page { padding-top: calc(72px + 4rem); padding-bottom: 6rem; }
+  .account-page__header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 3rem; }
+  .account-page__title { font-size: clamp(1.75rem, 3.5vw, 2.5rem); }
+  .account-page__grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 4rem; }
+  @media (max-width: 700px) { .account-page__grid { grid-template-columns: 1fr; } }
+  .account-page__section-title { font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--font-sans); font-weight: 500; margin-bottom: 1.5rem; color: var(--color-dust); }
+  .account-orders { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .account-orders th { text-align: left; font-family: var(--font-sans); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-dust); padding-bottom: 0.75rem; border-bottom: 1px solid var(--color-chalk); }
+  .account-orders td { padding: 0.75rem 0; border-bottom: 1px solid var(--color-chalk); vertical-align: middle; }
+</style>
+
+{% schema %}{ "name": "Customer Account", "settings": [] }{% endschema %}

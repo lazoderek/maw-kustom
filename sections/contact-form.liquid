@@ -1,0 +1,150 @@
+<section class="contact-section section" data-section-id="{{ section.id }}">
+  <div class="container" style="max-width:720px;">
+    <h1 class="contact-section__title" data-reveal="up">
+      {{ section.settings.heading | default: "Let's talk." }}
+    </h1>
+    {%- if section.settings.intro != blank -%}
+      <p class="contact-section__intro" data-reveal="up" data-reveal-delay="0.1">
+        {{ section.settings.intro }}
+      </p>
+    {%- endif -%}
+
+    {%- form 'contact', id: 'contact-form', class: 'contact-form' -%}
+      {%- if form.posted_successfully? -%}
+        <div class="contact-form__success" data-reveal="up">
+          <p>Thank you — Makayla will be in touch soon.</p>
+        </div>
+      {%- else -%}
+
+        {%- if form.errors -%}
+          <div class="contact-form__errors">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <div class="contact-form__fields">
+          <div class="contact-form__row contact-form__row--half">
+            <div class="contact-form__field">
+              <label for="contact-name">Name</label>
+              <input type="text" id="contact-name" name="contact[name]" value="{{ form.name }}" required autocomplete="name">
+            </div>
+            <div class="contact-form__field">
+              <label for="contact-email">Email</label>
+              <input type="email" id="contact-email" name="contact[email]" value="{{ form.email }}" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="contact-form__field">
+            <label for="contact-subject">Subject</label>
+            <input type="text" id="contact-subject" name="contact[subject]" value="{{ form.body }}" placeholder="Custom order, collaboration, general inquiry…">
+          </div>
+
+          <div class="contact-form__field">
+            <label for="contact-body">Message</label>
+            <textarea id="contact-body" name="contact[body]" rows="6" required placeholder="Tell me what you're looking for…">{{ form.body }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn--primary" style="align-self:flex-start;">
+            Send message
+          </button>
+        </div>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+</section>
+
+<style>
+  .contact-section {
+    padding-top: calc(72px + 4rem);
+  }
+
+  .contact-section__title {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    margin-bottom: 1rem;
+  }
+
+  .contact-section__intro {
+    max-width: 50ch;
+    font-style: italic;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--color-ink-soft);
+    margin-bottom: 3rem;
+  }
+
+  .contact-form__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .contact-form__row--half {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.75rem;
+  }
+
+  @media (max-width: 540px) {
+    .contact-form__row--half { grid-template-columns: 1fr; }
+  }
+
+  .contact-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .contact-form__field label {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-dust);
+  }
+
+  .contact-form__field input,
+  .contact-form__field textarea {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-chalk);
+    padding: 0.6rem 0;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+    width: 100%;
+  }
+
+  .contact-form__field input:focus,
+  .contact-form__field textarea:focus { border-color: var(--color-ink); }
+
+  .contact-form__field input::placeholder,
+  .contact-form__field textarea::placeholder { color: var(--color-dust); }
+
+  .contact-form__success {
+    padding: 2rem;
+    background: var(--color-chalk);
+    font-style: italic;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--color-stitch);
+  }
+
+  .contact-form__errors {
+    color: var(--color-stitch);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Contact form",
+  "settings": [
+    { "type": "text",     "id": "heading", "label": "Heading", "default": "Let's talk." },
+    { "type": "textarea", "id": "intro",   "label": "Intro text" }
+  ]
+}
+{% endschema %}

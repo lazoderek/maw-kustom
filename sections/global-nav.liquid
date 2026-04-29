@@ -1,0 +1,357 @@
+{% comment %}
+  Global navigation banner — sole site nav.
+  Pinned just above the bottom of the viewport via flex layout in theme.liquid.
+  Layout (left → right):
+    1. Wordmark + tiny copyright line
+    2. Vertical list of nav links
+    3. Wide editorial copy panel
+    4. (Optional) cart / account icons
+{% endcomment %}
+
+<nav
+  class="nav-banner"
+  role="navigation"
+  aria-label="Site navigation"
+  data-section-id="{{ section.id }}"
+  style="
+    --nav-bg:   {{ section.settings.bg_color    | default: '#0d0d0d' }};
+    --nav-fg:   {{ section.settings.text_color  | default: '#e8e2d2' }};
+    --nav-mute: {{ section.settings.muted_color | default: '#7a6f5d' }};
+  "
+>
+  <!-- Column 1 — Wordmark + copyright -->
+  <div class="nav-banner__brand">
+    <a href="{{ routes.root_url }}" class="nav-banner__wordmark-link" aria-label="{{ shop.name }}">
+      {%- if section.settings.logo != blank -%}
+        <img
+          src="{{ section.settings.logo | image_url: width: 600 }}"
+          alt="{{ shop.name }}"
+          loading="lazy"
+          class="nav-banner__logo-img"
+        >
+      {%- else -%}
+        <span class="nav-banner__wordmark">{{ section.settings.wordmark | default: 'MAW' }}</span>
+      {%- endif -%}
+    </a>
+    <p class="nav-banner__copyright">
+      &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}{% if section.settings.legal_text != blank %} &nbsp;{{ section.settings.legal_text }}{% endif %}
+    </p>
+  </div>
+
+  <!-- Column 2 — Vertical nav links -->
+  <ul class="nav-banner__links">
+    {%- for link in section.settings.menu.links -%}
+      <li>
+        <a
+          href="{{ link.url }}"
+          class="nav-banner__link"
+          {% if link.active %}aria-current="page"{% endif %}
+        >{{ link.title }}</a>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <!-- Column 3 — Editorial copy panel -->
+  {%- if section.settings.panel_text != blank -%}
+    <div class="nav-banner__panel">{{ section.settings.panel_text }}</div>
+  {%- endif -%}
+
+  <!-- Column 4 — Account / cart -->
+  {%- if section.settings.show_actions -%}
+    <div class="nav-banner__actions">
+      <a href="{{ routes.cart_url }}" class="nav-banner__action" aria-label="Cart">
+        {%- render 'icon-bag' -%}
+        <span data-cart-count hidden>0</span>
+      </a>
+      <a href="{{ routes.account_url }}" class="nav-banner__action" aria-label="Account">
+        {%- render 'icon-account' -%}
+      </a>
+    </div>
+  {%- endif -%}
+</nav>
+
+<style>
+  @font-face {
+    font-family: 'TTHoves';
+    src: url('{{ 'TT-Hoves-Pro-Trial-Expanded-Light.ttf' | asset_url }}') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .nav-banner {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: minmax(180px, auto) auto 1fr auto;
+    align-items: stretch;
+    gap: clamp(1.5rem, 4vw, 4rem);
+    padding: clamp(1.25rem, 2.5vw, 2rem) clamp(1.5rem, 4vw, 4rem);
+    background: rgba(25, 16, 9, 0.84);
+    color: var(--nav-fg);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    position: relative;
+    isolation: isolate;
+    margin: clamp(1rem, 3vw, 3rem) 0 2rem;
+  }
+
+  /* ── Column 1 — Brand ── */
+  .nav-banner__brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .nav-banner__wordmark-link { display: inline-block; }
+
+  .nav-banner__wordmark {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: clamp(2.75rem, 5vw, 4.5rem);
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    line-height: 0.85;
+    color: var(--nav-fg);
+    text-shadow:
+      2px 2px 0 rgba(0,0,0,0.35),
+      0 0 1px rgba(255,255,255,0.05);
+    /* slight rough/torn vibe */
+    -webkit-text-stroke: 1px rgba(255,255,255,0.04);
+  }
+
+  .nav-banner__logo-img {
+    max-height: clamp(80px, 9vw, 140px);
+    width: auto;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .nav-banner__copyright {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--nav-mute);
+    line-height: 1.4;
+    margin-top: auto;
+  }
+
+  /* ── Column 2 — Links ── */
+  .nav-banner__links {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: none;
+    padding-left: clamp(1rem, 2vw, 2rem);
+  }
+
+  .nav-banner__link {
+    /* font-family: var(--font-sans); */
+    font-family: 'TTHoves', var(--font-sans), sans-serif;
+    font-size: clamp(0.78rem, 1vw, 0.95rem);
+    letter-spacing: 0.04em;
+    color: var(--nav-fg);
+    line-height: 1.7;
+    /* transition: color 0.2s ease, transform 0.25s ease; */
+    text-transform: lowercase;
+    display: inline-block;
+    padding-inline: 0.3em;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-banner__link:hover {
+    background-color: var(--nav-fg);
+    color: var(--nav-bg);
+    padding-inline: 0.3em;
+  }
+
+  .nav-banner__link[aria-current="page"] {
+    background-color: var(--nav-fg);
+    color: var(--nav-bg);
+    padding-inline: 0.3em;
+  }
+
+  /* ── Column 3 — Editorial copy panel ── */
+  .nav-banner__panel {
+    align-self: center;
+    border-left: none;
+    padding-left: clamp(1rem, 2vw, 2rem);
+    font-family: var(--font-sans);
+    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+    line-height: 1.65;
+    color: var(--nav-mute);
+    column-count: 2;
+    column-gap: 2rem;
+    max-width: 70ch;
+  }
+
+  .nav-banner__panel p { margin: 0 0 0.5em; color: inherit; font-size: inherit; line-height: inherit; }
+  .nav-banner__panel p:last-child { margin-bottom: 0; }
+
+  /* ── Column 4 — Actions ── */
+  .nav-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    align-self: center;
+  }
+
+  .nav-banner__action {
+    position: relative;
+    display: flex;
+    align-items: center;
+    color: var(--nav-mute);
+    transition: color 0.2s;
+  }
+
+  .nav-banner__action:hover { color: var(--nav-fg); }
+
+  .nav-banner__action svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .nav-banner__action [data-cart-count] {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--nav-fg);
+    color: var(--nav-bg);
+    font-size: 0.55rem;
+    font-weight: 600;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .nav-banner {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 1rem 1.5rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .nav-banner__brand {
+      grid-column: 1;
+      grid-row: 1;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-banner__copyright { margin-top: 0; }
+
+    .nav-banner__links {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.25rem 1.5rem;
+      border-left: none;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-left: 0;
+      padding-top: 0.75rem;
+    }
+
+    .nav-banner__panel { display: none; }
+
+    .nav-banner__actions {
+      grid-column: 2;
+      grid-row: 1;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Navigation banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Brand"
+    },
+    {
+      "type": "text",
+      "id": "wordmark",
+      "label": "Wordmark text",
+      "info": "Used when no logo image is set.",
+      "default": "MAW"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image (optional)",
+      "info": "Overrides the wordmark text."
+    },
+    {
+      "type": "text",
+      "id": "legal_text",
+      "label": "Legal text (after copyright)",
+      "default": "All rights reserved."
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Menu"
+    },
+    {
+      "type": "header",
+      "content": "Editorial panel"
+    },
+    {
+      "type": "richtext",
+      "id": "panel_text",
+      "label": "Panel text",
+      "default": "<p>Custom garments designed and sewn by hand from our studio. Made to order in small batches with intention, restraint, and a respect for the craft.</p><p>Each piece is built to outlast the season — repaired, re-loved, and worn for years.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Banner background",
+      "default": "#0d0d0d"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Foreground text",
+      "default": "#e8e2d2"
+    },
+    {
+      "type": "color",
+      "id": "muted_color",
+      "label": "Muted text",
+      "default": "#7a6f5d"
+    },
+    {
+      "type": "header",
+      "content": "Actions"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_actions",
+      "label": "Show cart & account icons",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

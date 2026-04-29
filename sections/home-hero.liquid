@@ -1,0 +1,77 @@
+{% comment %}
+  Home hero — single full-bleed image filling the viewport above the nav-banner.
+{% endcomment %}
+
+<section class="home-hero" data-section-id="{{ section.id }}">
+  <div class="home-hero__frame">
+    {%- if section.settings.image != blank -%}
+      <img
+        class="home-hero__img"
+        src="{{ section.settings.image | image_url: width: 2400 }}"
+        srcset="
+          {{ section.settings.image | image_url: width: 1200 }} 1200w,
+          {{ section.settings.image | image_url: width: 1800 }} 1800w,
+          {{ section.settings.image | image_url: width: 2400 }} 2400w,
+          {{ section.settings.image | image_url: width: 3200 }} 3200w"
+        sizes="100vw"
+        alt="{{ section.settings.image.alt | default: shop.name }}"
+        width="{{ section.settings.image.width }}"
+        height="{{ section.settings.image.height }}"
+        loading="eager"
+        fetchpriority="high"
+      >
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+  .home-hero {
+    width: 100%;
+    /* Ensure the section fills the viewport height minus any padding */
+    height: calc(100vh - clamp(2rem, 6vw, 6rem)); 
+    padding: clamp(1rem, 3vw, 3rem);
+    box-sizing: border-box;
+    display: flex;
+  }
+
+  .home-hero__frame {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* always show the full height */
+  .home-hero__img {
+    display: block;
+    height: 90%;
+    width: auto;      /* Maintain aspect ratio based on height */
+    min-width: 100%;  /* Ensure it never leaves gaps on the sides */
+    object-fit: cover;
+  }
+
+  /* opposite of above
+  .home-hero__img {
+    display: block;
+    width: 100%;      /* Force it to follow the X-axis scaling */
+    height: 100%;     /* Force it to fill the Y-axis */
+    object-fit: cover; /* This is the magic: it scales to fill while cropping overflow */
+    object-position: center; /* Keeps the doll/center art focused */
+  }
+  */
+</style>
+
+{% schema %}
+{
+  "name": "Home hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Hero image"
+    }
+  ],
+  "presets": [
+    { "name": "Home hero" }
+  ]
+}
+{% endschema %}

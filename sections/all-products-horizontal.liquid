@@ -1,0 +1,433 @@
+{% comment %}
+  All-products horizontal scroll.
+  Fills the same viewport space as home-hero — identical outer shell (padding, height).
+  Products render as tall portrait panels on a drag-scrollable horizontal track.
+{% endcomment %}
+
+<section class="all-products" data-section-id="{{ section.id }}">
+  <div class="all-products__frame" id="all-products-frame">
+    <div class="all-products__track" id="all-products-track">
+
+      {%- for product in collection.products -%}
+        <div class="all-products__card" draggable="false">
+          
+          <div class="all-products__img-wrapper">
+            {%- for image in product.images -%}
+              <img
+                class="all-products__img{% if forloop.first %} is-active{% endif %}"
+                src="{{ image | image_url: width: 800 }}"
+                alt="{{ image.alt | default: product.title | escape }}"
+                loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+              >
+            {%- else -%}
+              <div class="all-products__placeholder"></div>
+            {%- endfor -%}
+
+            {%- if product.images.size > 1 -%}
+              <button class="all-products__arrow all-products__arrow--prev" type="button" aria-label="Previous image" data-arrow="prev" hidden>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11L5 7l4-4"/></svg>
+              </button>
+              <button class="all-products__arrow all-products__arrow--next" type="button" aria-label="Next image" data-arrow="next">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l4 4-4 4"/></svg>
+              </button>
+            {%- endif -%}
+          </div>
+
+          <div class="all-products__info">
+            <div class="all-products__main-content-row">
+              <div class="all-products__text-group">
+                <span class="all-products__title">{{ product.title }}</span>
+                <span class="all-products__price">{{ product.price | money }}</span>
+              </div>
+
+              {%- unless product.has_only_default_variant -%}
+                <div class="all-products__options">
+                  {%- for option in product.options_with_values -%}
+                    <div class="all-products__option-group">
+                      <label class="all-products__option-label" for="option-{{ product.id }}-{{ forloop.index }}">
+                        {{- option.name | downcase -}}
+                      </label>
+                      <div class="all-products__select-wrap">
+                        <select class="all-products__option-select" id="option-{{ product.id }}-{{ forloop.index }}" name="options[{{ option.name | escape }}]" data-product-id="{{ product.id }}" data-option-index="{{ forloop.index0 }}">
+                          {%- for value in option.values -%}
+                            <option value="{{ value | escape }}">{{ value | escape }}</option>
+                          {%- endfor -%}
+                        </select>
+                        <svg class="all-products__select-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4l3 3 3-3"/></svg>
+                      </div>
+                    </div>
+                  {%- endfor -%}
+                </div>
+              {%- endunless -%}
+            </div>
+
+            <button class="all-products__add-btn" type="button" aria-label="Add to cart">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                <line x1="7" y1="1" x2="7" y2="13"/>
+                <line x1="1" y1="7" x2="13" y2="7"/>
+              </svg>
+            </button>
+
+            <p class="all-products__description">
+              {{ product.description | strip_html | truncatewords: 20 }}
+            </p>
+          </div>
+          
+        </div>
+      {%- endfor -%}
+
+      {%- if collection.products.size == 0 -%}
+        <div class="all-products__empty">
+          <p>No pieces yet — check back soon.</p>
+        </div>
+      {%- endif -%}
+
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Make the Shopify section wrapper fill #MainContent exactly */
+  #shopify-section-{{ section.id }} {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Horizontal scroll track ── */
+  .all-products__track {
+    display: flex;
+    height: 100%;
+    gap: clamp(1.5rem, 3vw, 2.3rem); /* More breathing room between cards */
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    align-items: stretch;
+    overscroll-behavior-x: contain;
+  }
+
+  /* ── The Card (The Dark Bordered Box) ── */
+  .all-products__card {
+    flex-shrink: 0;
+    height: 100%;
+    width: clamp(300px, 42vw, 620px);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    
+    /* This creates the unified dark frame around everything */
+    background: rgba(25, 16, 9, 0.84); 
+    padding: 1.5rem;      
+    box-sizing: border-box;
+    position: relative;
+    transition: transform 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ── The Square Image Crop ── */
+  .all-products {
+    width: 100%;
+    height: calc(100vh - clamp(2rem, 6vw, 6rem));
+    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 3vw, 3rem) 0;
+    box-sizing: border-box;
+    display: flex;
+  }
+
+  .all-products__frame {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .all-products__img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .all-products__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .all-products__img.is-active {
+    opacity: 1;
+  }
+
+  /* ── Image gallery arrows ── */
+  .all-products__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(13, 10, 7, 0.6);
+    border: 1px solid rgba(232, 226, 210, 0.18);
+    color: #e8e2d2;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    z-index: 2;
+    padding: 0;
+  }
+
+  .all-products__img-wrapper:hover .all-products__arrow:not([hidden]) {
+    opacity: 1;
+  }
+
+  .all-products__arrow:hover {
+    background: rgba(13, 10, 7, 0.88);
+  }
+
+  .all-products__arrow--prev { left: 0.6rem; }
+  .all-products__arrow--next { right: 0.6rem; }
+
+  /* ── Info Area (Now inside the dark padding) ── */
+  .all-products__info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Pushes the price to the bottom if description is short */
+    gap: 0.5rem;
+  }
+
+  .all-products__title {
+    font-family: 'TTHoves', sans-serif;
+    font-size: 1rem;
+    color: #e8e2d2;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+  }
+
+  .all-products__description {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: rgba(232, 226, 210, 0.5);
+    margin: 0.5rem 0;
+    /* Optional: limit description height to keep cards consistent */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .all-products__price {
+    font-size: 0.85rem;
+    color: rgba(232, 226, 210, 0.4);
+    margin: 0; /* Removed margin-top to ensure it stays pinned to title */
+  }
+
+  /* ── Title + options row ── */
+  .all-products__main-content-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* ── Option dropdowns ── */
+  .all-products__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+    flex-shrink: 0;
+  }
+
+  .all-products__option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .all-products__option-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: rgba(232, 226, 210, 0.4);
+    text-transform: lowercase;
+  }
+
+  .all-products__text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem; /* Adjust this for the exact tightness you want */
+  }
+
+  .all-products__select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .all-products__option-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: 1px solid rgba(232, 226, 210, 0.22);
+    color: #e8e2d2;
+    font-family: 'TTHoves', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    padding: 0.3rem 1.8rem 0.3rem 0.65rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    min-width: 80px;
+  }
+
+  .all-products__option-select option {
+    background: #1a1009;
+    color: #e8e2d2;
+  }
+
+  .all-products__option-select:hover,
+  .all-products__option-select:focus {
+    border-color: rgba(232, 226, 210, 0.55);
+    background: rgba(232, 226, 210, 0.05);
+  }
+
+  .all-products__select-chevron {
+    position: absolute;
+    right: 0.5rem;
+    color: rgba(232, 226, 210, 0.45);
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .all-products__add-btn {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(232, 226, 210, 0.35);
+    color: #e8e2d2;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  .all-products__add-btn:hover {
+    background: rgba(232, 226, 210, 0.08);
+    border-color: rgba(232, 226, 210, 0.65);
+  }
+</style>
+
+<script>
+  (function () {
+    const frame = document.getElementById('all-products-frame');
+    const track = document.getElementById('all-products-track');
+    if (!frame || !track) return;
+
+    let isDragging  = false;
+    let startX      = 0;
+    let scrollStart = 0;
+    let dragMoved   = false;
+
+    const DRAG_THRESHOLD = 6; // px before we call it a drag vs. a click
+
+    frame.addEventListener('mousedown', (e) => {
+      isDragging  = true;
+      dragMoved   = false;
+      startX      = e.pageX;
+      scrollStart = track.scrollLeft;
+      track.style.scrollBehavior = 'auto';
+      frame.classList.add('is-dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const delta = startX - e.pageX;
+      if (Math.abs(delta) > DRAG_THRESHOLD) dragMoved = true;
+      track.scrollLeft = scrollStart + delta;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      frame.classList.remove('is-dragging');
+      track.style.scrollBehavior = 'smooth';
+    });
+
+    /* Prevent navigating to the product if the user was dragging */
+    track.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        if (dragMoved) {
+          e.preventDefault();
+          dragMoved = false;
+        }
+      });
+    });
+
+    /* Touch support */
+    let touchStartX      = 0;
+    let touchScrollStart = 0;
+
+    track.addEventListener('touchstart', (e) => {
+      touchStartX      = e.touches[0].pageX;
+      touchScrollStart = track.scrollLeft;
+      track.style.scrollBehavior = 'auto';
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+      const delta = touchStartX - e.touches[0].pageX;
+      track.scrollLeft = touchScrollStart + delta;
+    }, { passive: true });
+
+    track.addEventListener('touchend', () => {
+      track.style.scrollBehavior = 'smooth';
+    });
+
+    /* ── Image gallery cycling ── */
+    track.querySelectorAll('.all-products__img-wrapper').forEach((wrapper) => {
+      const imgs    = wrapper.querySelectorAll('.all-products__img');
+      const prevBtn = wrapper.querySelector('[data-arrow="prev"]');
+      const nextBtn = wrapper.querySelector('[data-arrow="next"]');
+      if (imgs.length <= 1) return;
+
+      let current = 0;
+
+      function goTo(index) {
+        imgs[current].classList.remove('is-active');
+        current = index;
+        imgs[current].classList.add('is-active');
+        if (prevBtn) prevBtn.hidden = current === 0;
+        if (nextBtn) nextBtn.hidden = current === imgs.length - 1;
+      }
+
+      prevBtn && prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (current > 0) goTo(current - 1);
+      });
+
+      nextBtn && nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (current < imgs.length - 1) goTo(current + 1);
+      });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "All products scroll",
+  "settings": [],
+  "presets": [
+    { "name": "All products scroll" }
+  ]
+}
+{% endschema %}

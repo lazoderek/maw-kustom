@@ -1,0 +1,49 @@
+<section class="error-404 section" data-section-id="{{ section.id }}">
+  <div class="container container--narrow" style="text-align:center; padding-top:8rem; padding-bottom:8rem;">
+    <p class="error-404__code" data-reveal="up">404</p>
+    <h1 class="error-404__title" data-reveal="up" data-reveal-delay="0.1">
+      {{ section.settings.title | default: "This page isn't here." }}
+    </h1>
+    <p class="error-404__message" data-reveal="up" data-reveal-delay="0.2">
+      {{ section.settings.message | default: "It may have moved, or perhaps it never existed — like a pattern that got away." }}
+    </p>
+    <a href="{{ routes.root_url }}" class="btn btn--primary" data-reveal="up" data-reveal-delay="0.3" style="margin-top:2.5rem;">
+      {{ section.settings.cta_label | default: 'Back to the studio' }}
+    </a>
+  </div>
+</section>
+
+<style>
+  .error-404__code {
+    font-family: var(--font-serif);
+    font-size: clamp(6rem, 18vw, 16rem);
+    line-height: 1;
+    color: var(--color-dust);
+    opacity: 0.3;
+    margin-bottom: -1rem;
+  }
+
+  .error-404__title {
+    margin-bottom: 1.25rem;
+  }
+
+  .error-404__message {
+    max-width: 40ch;
+    margin-inline: auto;
+    font-style: italic;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--color-ink-soft);
+  }
+</style>
+
+{% schema %}
+{
+  "name": "404 page",
+  "settings": [
+    { "type": "text",     "id": "title",     "label": "Heading",   "default": "This page isn't here." },
+    { "type": "textarea", "id": "message",   "label": "Message",   "default": "It may have moved, or perhaps it never existed." },
+    { "type": "text",     "id": "cta_label", "label": "CTA label", "default": "Back to the studio" }
+  ]
+}
+{% endschema %}

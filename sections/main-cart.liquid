@@ -1,0 +1,309 @@
+<section class="cart-page section" data-section-id="{{ section.id }}">
+  <div class="container" style="max-width:860px;">
+    <h1 class="cart-page__title" data-reveal="up">Your bag</h1>
+
+    {%- if cart.item_count > 0 -%}
+      <form action="{{ routes.cart_url }}" method="post" id="cart-form" class="cart-form">
+
+        <div class="cart-items" id="cart-items">
+          {%- for item in cart.items -%}
+            <div class="cart-item" id="cart-item-{{ item.index | plus: 1 }}">
+
+              <a href="{{ item.url }}" class="cart-item__image-wrap">
+                <img
+                  src="{{ item.image | image_url: width: 300 }}"
+                  alt="{{ item.image.alt | default: item.title | escape }}"
+                  width="120"
+                  height="150"
+                  loading="lazy"
+                >
+              </a>
+
+              <div class="cart-item__info">
+                <div class="cart-item__header">
+                  <div>
+                    <p class="cart-item__vendor">{{ item.vendor }}</p>
+                    <a href="{{ item.url }}" class="cart-item__title">{{ item.product_title }}</a>
+                    {%- unless item.variant_title == 'Default Title' -%}
+                      <p class="cart-item__variant">{{ item.variant_title }}</p>
+                    {%- endunless -%}
+
+                    {%- if item.properties.size > 0 -%}
+                      <ul class="cart-item__properties">
+                        {%- for p in item.properties -%}
+                          {%- unless p.last == blank -%}
+                            <li>
+                              <span>{{ p.first }}:</span> {{ p.last }}
+                            </li>
+                          {%- endunless -%}
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+                  </div>
+
+                  <button
+                    type="button"
+                    class="cart-item__remove btn--text"
+                    aria-label="Remove {{ item.title }}"
+                    onclick="removeCartItem('{{ item.key }}')"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div class="cart-item__footer">
+                  <div class="cart-item__qty">
+                    <button
+                      type="button"
+                      class="cart-item__qty-btn"
+                      onclick="updateQty('{{ item.key }}', {{ item.quantity | minus: 1 }})"
+                      aria-label="Decrease"
+                    >−</button>
+                    <span class="cart-item__qty-val">{{ item.quantity }}</span>
+                    <button
+                      type="button"
+                      class="cart-item__qty-btn"
+                      onclick="updateQty('{{ item.key }}', {{ item.quantity | plus: 1 }})"
+                      aria-label="Increase"
+                    >+</button>
+                  </div>
+
+                  <p class="cart-item__price">{{ item.final_line_price | money }}</p>
+                </div>
+              </div>
+            </div>
+          {%- endfor -%}
+        </div>
+
+        <div class="cart-footer">
+          <div class="cart-footer__totals">
+            <p class="cart-footer__label">Subtotal</p>
+            <p class="cart-footer__total">{{ cart.total_price | money }}</p>
+          </div>
+          <p class="cart-footer__note">Shipping and taxes calculated at checkout.</p>
+
+          <div class="cart-footer__actions">
+            <button type="submit" name="checkout" class="btn btn--primary cart-footer__checkout">
+              Proceed to checkout
+            </button>
+            <a href="{{ routes.all_products_collection_url }}" class="btn btn--ghost">
+              Continue shopping
+            </a>
+          </div>
+        </div>
+      </form>
+
+    {%- else -%}
+      <div class="cart-empty" data-reveal="up">
+        <p class="cart-empty__message">Your bag is empty — let's fill it.</p>
+        <a href="{{ routes.all_products_collection_url }}" class="btn btn--primary" style="margin-top:2rem;">
+          Browse the collection
+        </a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+  .cart-page__title {
+    margin-bottom: 2.5rem;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .cart-items { margin-bottom: 3rem; }
+
+  .cart-item {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-chalk);
+  }
+
+  .cart-item__image-wrap {
+    display: block;
+    overflow: hidden;
+    background: var(--color-chalk);
+  }
+
+  .cart-item__image-wrap img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  .cart-item__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .cart-item__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .cart-item__vendor {
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-dust);
+    margin-bottom: 0.25rem;
+  }
+
+  .cart-item__title {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 400;
+    display: block;
+  }
+
+  .cart-item__variant {
+    font-size: 0.8rem;
+    color: var(--color-dust);
+    margin-top: 0.2rem;
+  }
+
+  .cart-item__properties {
+    list-style: none;
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--color-dust);
+    line-height: 1.8;
+  }
+
+  .cart-item__remove {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-dust);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    border-bottom: 1px solid currentColor;
+    white-space: nowrap;
+    transition: color 0.2s;
+  }
+
+  .cart-item__remove:hover { color: var(--color-stitch); }
+
+  .cart-item__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cart-item__qty {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--color-chalk);
+    padding: 0.25rem 0.75rem;
+  }
+
+  .cart-item__qty-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--color-ink);
+    padding: 0;
+    line-height: 1;
+  }
+
+  .cart-item__qty-val {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    min-width: 1.5ch;
+    text-align: center;
+  }
+
+  .cart-item__price {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--color-ink);
+  }
+
+  /* ── Cart footer ── */
+  .cart-footer {
+    border-top: 1px solid var(--color-ink);
+    padding-top: 2rem;
+  }
+
+  .cart-footer__totals {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+  }
+
+  .cart-footer__label {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-dust);
+  }
+
+  .cart-footer__total {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+  }
+
+  .cart-footer__note {
+    font-size: 0.78rem;
+    color: var(--color-dust);
+    margin-bottom: 1.5rem;
+  }
+
+  .cart-footer__actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .cart-footer__checkout { flex: 1; justify-content: center; padding: 1rem; }
+
+  /* ── Empty state ── */
+  .cart-empty {
+    padding: 6rem 0;
+    text-align: center;
+  }
+
+  .cart-empty__message {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--color-ink-soft);
+  }
+</style>
+
+<script>
+  async function removeCartItem(key) {
+    await fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: key, quantity: 0 }),
+    });
+    window.location.reload();
+  }
+
+  async function updateQty(key, qty) {
+    if (qty < 0) return;
+    await fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: key, quantity: qty }),
+    });
+    window.location.reload();
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Cart page",
+  "settings": []
+}
+{% endschema %}

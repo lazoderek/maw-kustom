@@ -1,0 +1,41 @@
+<article class="editorial-page section" data-section-id="{{ section.id }}">
+  <div class="container container--narrow">
+    <h1 class="editorial-page__title" data-reveal="up">{{ page.title }}</h1>
+    <div class="editorial-page__body rte" data-reveal="up" data-reveal-delay="0.15">
+      {{ page.content }}
+    </div>
+  </div>
+</article>
+
+<style>
+  .editorial-page {
+    padding-top: calc(72px + 4rem);
+  }
+
+  .editorial-page__title {
+    margin-bottom: 2.5rem;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .editorial-page__body {
+    font-size: 1rem;
+    line-height: 1.9;
+    color: var(--color-ink-soft);
+  }
+
+  .editorial-page__body h2 { margin: 2em 0 0.75em; }
+  .editorial-page__body h3 { margin: 1.5em 0 0.5em; }
+  .editorial-page__body p  { margin-bottom: 1em; }
+  .editorial-page__body a  { border-bottom: 1px solid var(--color-dust); transition: border-color 0.2s; }
+  .editorial-page__body a:hover { border-color: var(--color-ink); }
+  .editorial-page__body img { max-width: 100%; border-radius: 1px; margin: 1.5em 0; }
+  .editorial-page__body ul, .editorial-page__body ol { margin: 1em 0 1em 1.5em; }
+  .editorial-page__body li { margin-bottom: 0.4em; line-height: 1.7; }
+</style>
+
+{% schema %}
+{
+  "name": "Page",
+  "settings": []
+}
+{% endschema %}

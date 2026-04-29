@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Palette ── */
+  --color-cream: #FAF8F4;
+  --color-chalk: #F0EBE1;
+  --color-dust:  #C8B8A2;
+  --color-stitch: #8C5E4A;
+  --color-ink:   #111110;
+  --color-ink-soft: #3A3835;
+  --color-white: #FFFFFF;
+
+  /* ── Typography ── */
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans:  "DM Sans", system-ui, sans-serif;
+
+  /* ── Spacing ── */
+  --spacing-section: 7rem;
+  --spacing-section-sm: 4rem;
+
+  /* ── Transitions ── */
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Base resets ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  /* */
+  background-image: url("https://cdn.shopify.com/s/files/1/0677/4472/7331/files/bg.png?v=1776670229");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  /* */
+  color: var(--color-ink);
+  /* Full-viewport flex column: content window on top, nav bar pinned to bottom */
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── Scrollable content window ── */
+#MainContent {
+  flex: 1;
+  min-height: 0; /* required for flex overflow to work */
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Skip link ── */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: translateY(-100%);
+  transition: transform 0.2s;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Typography scale ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: clamp(3.5rem, 8vw, 7rem); }
+h2 { font-size: clamp(2.5rem, 5vw, 4.5rem); }
+h3 { font-size: clamp(1.75rem, 3vw, 2.75rem); }
+h4 { font-size: clamp(1.25rem, 2vw, 1.75rem); }
+
+p {
+  line-height: 1.7;
+  font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+  color: var(--color-ink-soft);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Layout utilities ── */
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+.container--narrow {
+  max-width: 900px;
+}
+
+/* ── Button system ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s var(--ease-smooth);
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background: var(--color-ink);
+  color: var(--color-cream);
+  padding: 0.9rem 2rem;
+}
+
+.btn--primary:hover {
+  background: var(--color-stitch);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-ink);
+  padding: 0.9rem 2rem;
+  border: 1px solid var(--color-ink);
+}
+
+.btn--ghost:hover {
+  background: var(--color-ink);
+  color: var(--color-cream);
+}
+
+.btn--text {
+  background: transparent;
+  color: var(--color-ink);
+  padding: 0;
+  border-bottom: 1px solid currentColor;
+  border-radius: 0;
+  padding-bottom: 2px;
+}
+
+/* ── Section spacing ── */
+.section {
+  padding-block: var(--spacing-section);
+}
+
+.section--sm {
+  padding-block: var(--spacing-section-sm);
+}
+
+/* ── GSAP animation starting states ── */
+[data-reveal] {
+  opacity: 0;
+}
+
+[data-reveal="up"] {
+  transform: translateY(40px);
+}
+
+[data-reveal="left"] {
+  transform: translateX(-40px);
+}
+
+[data-reveal="right"] {
+  transform: translateX(40px);
+}
+
+[data-reveal="scale"] {
+  transform: scale(0.92);
+}
+
+/* ── Visually hidden (a11y) ── */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Scrapbook / texture layer ── */
+/*
+.texture-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+*/

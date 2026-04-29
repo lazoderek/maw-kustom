@@ -1,0 +1,125 @@
+<section class="search-page section" data-section-id="{{ section.id }}">
+  <div class="container">
+    <div class="search-page__header" data-reveal="up">
+      <h1 class="search-page__title">
+        {%- if search.performed -%}
+          {{ search.results_count }} result{{ search.results_count | plural: '', 's' }} for
+          <em>"{{ search.terms | escape }}"</em>
+        {%- else -%}
+          Search
+        {%- endif -%}
+      </h1>
+
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search-page__form">
+        <input type="hidden" name="type" value="product">
+        <div class="search-page__input-wrap">
+          <input
+            type="search"
+            name="q"
+            value="{{ search.terms | escape }}"
+            placeholder="Search pieces…"
+            aria-label="Search"
+            class="search-page__input"
+          >
+          <button type="submit" class="search-page__btn btn btn--primary" aria-label="Search">Search</button>
+        </div>
+      </form>
+    </div>
+
+    {%- if search.performed -%}
+      {%- if search.results_count > 0 -%}
+        <div class="collection-strip__grid" style="margin-top:3rem;" data-reveal="up" data-reveal-stagger="0.07">
+          {%- for result in search.results -%}
+            {%- if result.object_type == 'product' -%}
+              <article class="product-card" data-reveal-child>
+                <a href="{{ result.url }}" class="product-card__link">
+                  <div class="product-card__image-wrap">
+                    {%- if result.featured_image -%}
+                      <img
+                        src="{{ result.featured_image | image_url: width: 600 }}"
+                        alt="{{ result.featured_image.alt | default: result.title | escape }}"
+                        loading="lazy"
+                        class="product-card__image product-card__image--primary"
+                      >
+                    {%- else -%}
+                      <div class="product-card__image-placeholder"></div>
+                    {%- endif -%}
+                  </div>
+                  <div class="product-card__info">
+                    <h2 class="product-card__title">{{ result.title }}</h2>
+                    {%- render 'product-price', product: result -%}
+                  </div>
+                </a>
+              </article>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- else -%}
+        <div class="search-page__empty" data-reveal="up">
+          <p>No results found. Try a different search term, or <a href="{{ routes.all_products_collection_url }}">browse the full collection</a>.</p>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</section>
+
+<style>
+  .search-page {
+    padding-top: calc(72px + 4rem);
+  }
+
+  .search-page__title {
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+    margin-bottom: 2rem;
+  }
+
+  .search-page__title em {
+    font-style: italic;
+    color: var(--color-stitch);
+  }
+
+  .search-page__input-wrap {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    border-bottom: 1px solid var(--color-ink);
+    padding-bottom: 0.5rem;
+    max-width: 600px;
+  }
+
+  .search-page__input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    color: var(--color-ink);
+  }
+
+  .search-page__input::placeholder { color: var(--color-dust); }
+
+  .search-page__btn { padding: 0.7rem 1.5rem; }
+
+  .search-page__empty {
+    padding: 4rem 0;
+    font-style: italic;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--color-ink-soft);
+  }
+
+  .search-page__empty a {
+    border-bottom: 1px solid var(--color-dust);
+    transition: border-color 0.2s;
+  }
+
+  .search-page__empty a:hover { border-color: var(--color-ink); }
+</style>
+
+{% schema %}
+{
+  "name": "Search results",
+  "settings": []
+}
+{% endschema %}

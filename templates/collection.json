@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "products": {
+      "type": "all-products-horizontal",
+      "settings": {}
+    }
+  },
+  "order": [
+    "products"
+  ]
+}

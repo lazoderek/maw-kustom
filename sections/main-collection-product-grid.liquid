@@ -1,0 +1,215 @@
+<section class="collection-grid section" data-section-id="{{ section.id }}">
+  <div class="container">
+
+    {%- paginate collection.products by section.settings.products_per_page -%}
+
+    <div class="collection-grid__toolbar">
+      <p class="collection-grid__count">
+        {{ collection.products_count }}
+        {%- if collection.products_count == 1 -%}&nbsp;piece{%- else -%}&nbsp;pieces{%- endif -%}
+      </p>
+
+      <!-- Sort -->
+      <div class="collection-grid__sort" x-data="{ open: false }">
+        <button class="collection-grid__sort-btn" @click="open = !open" :aria-expanded="open">
+          Sort
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M2 4l4 4 4-4"/>
+          </svg>
+        </button>
+        <ul class="collection-grid__sort-dropdown" x-show="open" @click.outside="open = false" x-cloak>
+          <li><a href="{{ collection.url }}?sort_by=manual">Featured</a></li>
+          <li><a href="{{ collection.url }}?sort_by=price-ascending">Price: Low to High</a></li>
+          <li><a href="{{ collection.url }}?sort_by=price-descending">Price: High to Low</a></li>
+          <li><a href="{{ collection.url }}?sort_by=created-descending">Newest</a></li>
+        </ul>
+      </div>
+    </div>
+
+    {%- if collection.products.size > 0 -%}
+      <div class="collection-grid__items" data-reveal="up" data-reveal-stagger="0.07">
+        {%- for product in collection.products -%}
+          <article class="product-card" data-reveal-child>
+            <a href="{{ product.url }}" class="product-card__link" aria-label="{{ product.title }}">
+              <div class="product-card__image-wrap" data-parallax-wrap>
+                {%- if product.featured_image != blank -%}
+                  <img
+                    class="product-card__image product-card__image--primary"
+                    src="{{ product.featured_image | image_url: width: 800 }}"
+                    alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                    width="{{ product.featured_image.width }}"
+                    height="{{ product.featured_image.height }}"
+                    loading="lazy"
+                    data-parallax="0.12"
+                  >
+                  {%- if product.images[1] != blank -%}
+                    <img
+                      class="product-card__image product-card__image--hover"
+                      src="{{ product.images[1] | image_url: width: 800 }}"
+                      alt="{{ product.images[1].alt | default: product.title | escape }}"
+                      loading="lazy"
+                    >
+                  {%- endif -%}
+                {%- else -%}
+                  <div class="product-card__image-placeholder"></div>
+                {%- endif -%}
+
+                {%- if product.tags contains 'custom-order' or product.tags contains 'made-to-order' -%}
+                  <span class="product-card__badge">Made to order</span>
+                {%- elsif product.tags contains 'inquiry' -%}
+                  <span class="product-card__badge product-card__badge--inquiry">Inquiry only</span>
+                {%- endif -%}
+              </div>
+
+              <div class="product-card__info">
+                <h2 class="product-card__title">{{ product.title }}</h2>
+                <div class="product-card__meta">
+                  {%- render 'product-price', product: product -%}
+                </div>
+              </div>
+            </a>
+          </article>
+        {%- endfor -%}
+      </div>
+
+      {%- if paginate.pages > 1 -%}
+        <nav class="pagination" aria-label="Pagination">
+          {%- if paginate.previous -%}
+            <a href="{{ paginate.previous.url }}" class="pagination__btn btn btn--ghost">← Previous</a>
+          {%- endif -%}
+          <span class="pagination__info">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+          {%- if paginate.next -%}
+            <a href="{{ paginate.next.url }}" class="pagination__btn btn btn--ghost">Next →</a>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+
+    {%- else -%}
+      <div class="collection-grid__empty">
+        <p>No pieces in this collection yet — check back soon.</p>
+      </div>
+    {%- endif -%}
+
+    {%- endpaginate -%}
+  </div>
+</section>
+
+<style>
+  .collection-grid__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-chalk);
+  }
+
+  .collection-grid__count {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--color-dust);
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+  }
+
+  .collection-grid__sort { position: relative; }
+
+  .collection-grid__sort-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .collection-grid__sort-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    background: var(--color-cream);
+    border: 1px solid var(--color-chalk);
+    list-style: none;
+    min-width: 180px;
+    z-index: 20;
+    box-shadow: 0 8px 32px rgba(17,17,16,0.1);
+  }
+
+  .collection-grid__sort-dropdown li a {
+    display: block;
+    padding: 0.65rem 1rem;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+  }
+
+  .collection-grid__sort-dropdown li a:hover { background: var(--color-chalk); }
+
+  .collection-grid__items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: clamp(1rem, 2.5vw, 2.5rem);
+  }
+
+  .product-card__badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border-radius: 1px;
+  }
+
+  .product-card__badge--inquiry { background: var(--color-ink); color: var(--color-cream); }
+
+  .collection-grid__empty {
+    padding: 5rem 0;
+    text-align: center;
+    font-style: italic;
+    font-family: var(--font-serif);
+    color: var(--color-dust);
+    font-size: 1.2rem;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 4rem;
+  }
+
+  .pagination__info {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--color-dust);
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Collection product grid",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    }
+  ]
+}
+{% endschema %}

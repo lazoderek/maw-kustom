@@ -1,0 +1,129 @@
+<section class="blog-page section" data-section-id="{{ section.id }}">
+  <div class="container">
+    <header class="blog-page__header" data-reveal="up">
+      <h1 class="blog-page__title">{{ blog.title }}</h1>
+    </header>
+
+    {%- paginate blog.articles by 12 -%}
+    <div class="blog-page__grid">
+      {%- for article in blog.articles -%}
+        <article class="article-card" data-reveal="up" data-reveal-delay="{{ forloop.index | times: 0.07 }}">
+          <a href="{{ article.url }}" class="article-card__link">
+            {%- if article.image -%}
+              <div class="article-card__image-wrap">
+                <img
+                  src="{{ article.image | image_url: width: 800 }}"
+                  alt="{{ article.image.alt | default: article.title | escape }}"
+                  loading="lazy"
+                  width="{{ article.image.width }}"
+                  height="{{ article.image.height }}"
+                >
+              </div>
+            {%- endif -%}
+            <div class="article-card__info">
+              <time class="article-card__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+                {{ article.published_at | date: '%B %d, %Y' }}
+              </time>
+              <h2 class="article-card__title">{{ article.title }}</h2>
+              {%- if article.excerpt != blank -%}
+                <p class="article-card__excerpt">{{ article.excerpt | strip_html | truncate: 120 }}</p>
+              {%- endif -%}
+              <span class="article-card__read-more btn--text">Read more</span>
+            </div>
+          </a>
+        </article>
+      {%- endfor -%}
+    </div>
+
+    {%- if paginate.pages > 1 -%}
+      <nav class="pagination" aria-label="Pagination">
+        {%- if paginate.previous -%}
+          <a href="{{ paginate.previous.url }}" class="pagination__btn btn btn--ghost">← Previous</a>
+        {%- endif -%}
+        <span class="pagination__info">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+        {%- if paginate.next -%}
+          <a href="{{ paginate.next.url }}" class="pagination__btn btn btn--ghost">Next →</a>
+        {%- endif -%}
+      </nav>
+    {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+<style>
+  .blog-page {
+    padding-top: calc(72px + 4rem);
+  }
+
+  .blog-page__title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 3rem;
+  }
+
+  .blog-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .article-card__image-wrap {
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+    background: var(--color-chalk);
+    margin-bottom: 1.25rem;
+  }
+
+  .article-card__image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-smooth);
+  }
+
+  .article-card:hover .article-card__image-wrap img {
+    transform: scale(1.04);
+  }
+
+  .article-card__date {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-dust);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .article-card__title {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    margin-bottom: 0.75rem;
+    transition: color 0.2s;
+  }
+
+  .article-card:hover .article-card__title { color: var(--color-stitch); }
+
+  .article-card__excerpt {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-ink-soft);
+    margin-bottom: 1rem;
+  }
+
+  .article-card__read-more {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-dust);
+    border-bottom: 1px solid currentColor;
+    transition: color 0.2s;
+  }
+
+  .article-card:hover .article-card__read-more { color: var(--color-ink); }
+</style>
+
+{% schema %}
+{
+  "name": "Blog posts",
+  "settings": []
+}
+{% endschema %}

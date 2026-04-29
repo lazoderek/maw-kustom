@@ -1,0 +1,46 @@
+<section class="account-page section" data-section-id="{{ section.id }}">
+  <div class="container" style="max-width:800px;">
+    <a href="{{ routes.account_url }}" class="auth-form__link" style="display:inline-block;margin-bottom:2rem;">← Back to account</a>
+
+    <h1 class="account-page__title" data-reveal="up">Order {{ order.name }}</h1>
+    <p style="color:var(--color-dust);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2.5rem;">
+      Placed {{ order.created_at | date: '%B %d, %Y' }} · {{ order.financial_status_label }}
+    </p>
+
+    <!-- Line items -->
+    <div class="cart-items" style="margin-bottom:2rem;">
+      {%- for item in order.line_items -%}
+        <div class="cart-item" style="padding:1.25rem 0;border-bottom:1px solid var(--color-chalk);">
+          <div class="cart-item__image-wrap" style="width:80px;height:100px;">
+            {%- if item.image -%}
+              <img src="{{ item.image | image_url: width: 200 }}" alt="{{ item.title | escape }}" style="width:100%;height:100%;object-fit:cover;">
+            {%- endif -%}
+          </div>
+          <div>
+            <p style="font-family:var(--font-serif);font-size:1.05rem;">{{ item.title }}</p>
+            {%- unless item.variant_title == 'Default Title' -%}
+              <p class="cart-item__variant">{{ item.variant_title }}</p>
+            {%- endunless -%}
+            {%- if item.properties.size > 0 -%}
+              <ul class="cart-item__properties">
+                {%- for p in item.properties -%}{%- unless p.last == blank -%}<li>{{ p.first }}: {{ p.last }}</li>{%- endunless -%}{%- endfor -%}
+              </ul>
+            {%- endif -%}
+            <p style="margin-top:0.5rem;font-size:0.85rem;color:var(--color-dust);">Qty: {{ item.quantity }} · {{ item.final_line_price | money }}</p>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    <!-- Totals -->
+    <div style="border-top:1px solid var(--color-ink);padding-top:1.5rem;max-width:320px;margin-left:auto;">
+      <div class="cart-footer__totals"><span>Subtotal</span><span>{{ order.subtotal_price | money }}</span></div>
+      {%- for shipping in order.shipping_methods -%}
+        <div class="cart-footer__totals"><span>{{ shipping.title }}</span><span>{{ shipping.price | money }}</span></div>
+      {%- endfor -%}
+      <div class="cart-footer__totals" style="margin-top:0.75rem;font-weight:500;"><span style="font-family:var(--font-serif);font-size:1.1rem;">Total</span><span style="font-family:var(--font-serif);font-size:1.2rem;">{{ order.total_price | money }}</span></div>
+    </div>
+  </div>
+</section>
+
+{% schema %}{ "name": "Customer Order", "settings": [] }{% endschema %}
