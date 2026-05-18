@@ -1,14 +1,19 @@
 {% comment %}
-  All-products horizontal scroll.
-  Fills the same viewport space as home-hero — identical outer shell (padding, height).
-  Products render as tall portrait panels on a drag-scrollable horizontal track.
+  All-products: horizontal drag-scroll on desktop; mobile matches Info/Studio — full width, vertical stack, page scroll on #MainContent.
 {% endcomment %}
 
 <section class="all-products" data-section-id="{{ section.id }}">
+  {%- comment -%} Preserve manual breaks after strip_html (literal newlines + editor br/p). {%- endcomment -%}
+  {%- capture maw_product_desc_newline %}
+
+  {%- endcapture -%}
   <div class="all-products__frame" id="all-products-frame">
     <div class="all-products__track" id="all-products-track">
 
       {%- for product in collection.products -%}
+        {%- assign product_is_first = forloop.first -%}
+        {%- comment -%} Frames frame-2 … frame-4 (n+1 offset vs gallery); cycles for longer collections. {%- endcomment -%}
+        {%- assign product_frame_i = forloop.index0 | modulo: 3 | plus: 2 -%}
         <div class="all-products__card" draggable="false">
           
           <div class="all-products__img-wrapper">
@@ -23,6 +28,14 @@
               <div class="all-products__placeholder"></div>
             {%- endfor -%}
 
+            <img
+              class="all-products__frame-img"
+              src="{{ 'frame-' | append: product_frame_i | append: '.png' | asset_url }}"
+              alt=""
+              aria-hidden="true"
+              loading="{% if product_is_first %}eager{% else %}lazy{% endif %}"
+            >
+
             {%- if product.images.size > 1 -%}
               <button class="all-products__arrow all-products__arrow--prev" type="button" aria-label="Previous image" data-arrow="prev" hidden>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11L5 7l4-4"/></svg>
@@ -34,32 +47,51 @@
           </div>
 
           <div class="all-products__info">
-            <div class="all-products__main-content-row">
+            <div class="all-products__head-row">
               <div class="all-products__text-group">
                 <span class="all-products__title">{{ product.title }}</span>
                 <span class="all-products__price">{{ product.price | money }}</span>
               </div>
 
-              {%- unless product.has_only_default_variant -%}
-                <div class="all-products__options">
-                  {%- for option in product.options_with_values -%}
-                    <div class="all-products__option-group">
-                      <label class="all-products__option-label" for="option-{{ product.id }}-{{ forloop.index }}">
-                        {{- option.name | downcase -}}
-                      </label>
-                      <div class="all-products__select-wrap">
-                        <select class="all-products__option-select" id="option-{{ product.id }}-{{ forloop.index }}" name="options[{{ option.name | escape }}]" data-product-id="{{ product.id }}" data-option-index="{{ forloop.index0 }}">
-                          {%- for value in option.values -%}
-                            <option value="{{ value | escape }}">{{ value | escape }}</option>
-                          {%- endfor -%}
-                        </select>
-                        <svg class="all-products__select-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4l3 3 3-3"/></svg>
+              <div class="all-products__options-wrap">
+                {%- unless product.has_only_default_variant -%}
+                  <div class="all-products__options">
+                    {%- for option in product.options_with_values -%}
+                      <div class="all-products__option-group">
+                        <label class="all-products__option-label" for="option-{{ product.id }}-{{ forloop.index }}">
+                          {{- option.name | downcase -}}
+                        </label>
+                        <div class="all-products__select-wrap">
+                          <select class="all-products__option-select" id="option-{{ product.id }}-{{ forloop.index }}" name="options[{{ option.name | escape }}]" data-product-id="{{ product.id }}" data-option-index="{{ forloop.index0 }}">
+                            {%- for value in option.values -%}
+                              <option value="{{ value | escape }}">{{ value | escape }}</option>
+                            {%- endfor -%}
+                          </select>
+                          <svg class="all-products__select-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4l3 3 3-3"/></svg>
+                        </div>
                       </div>
-                    </div>
-                  {%- endfor -%}
-                </div>
-              {%- endunless -%}
+                    {%- endfor -%}
+                  </div>
+                {%- endunless -%}
+              </div>
             </div>
+
+            {%- liquid
+              assign _pd = product.description
+              assign _pd = _pd | replace: '</p>', '[[MAW_DESC_BR]]'
+              assign _pd = _pd | replace: '<br />', '[[MAW_DESC_BR]]'
+              assign _pd = _pd | replace: '<br/>', '[[MAW_DESC_BR]]'
+              assign _pd = _pd | replace: '<br>', '[[MAW_DESC_BR]]'
+              assign _pd = _pd | strip_html | strip
+              assign _pd = _pd | replace: maw_product_desc_newline, '[[MAW_DESC_BR]]'
+              assign _pd_parts = _pd | split: '[[MAW_DESC_BR]]'
+            -%}
+            <p class="all-products__description">
+              {%- for _pd_part in _pd_parts -%}
+                {{- _pd_part | strip -}}
+                {%- unless forloop.last -%}<br />{%- endunless -%}
+              {%- endfor -%}
+            </p>
 
             <button class="all-products__add-btn" type="button" aria-label="Add to cart">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
@@ -67,10 +99,6 @@
                 <line x1="1" y1="7" x2="13" y2="7"/>
               </svg>
             </button>
-
-            <p class="all-products__description">
-              {{ product.description | strip_html | truncatewords: 20 }}
-            </p>
           </div>
           
         </div>
@@ -98,15 +126,18 @@
   .all-products__track {
     display: flex;
     height: 100%;
-    gap: clamp(1.5rem, 3vw, 2.3rem); /* More breathing room between cards */
+    /* Gap + card inline padding: frames scale past the card box; need real air between visuals */
+    gap: clamp(2rem, 6vw, 4rem);
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
     align-items: stretch;
     overscroll-behavior-x: contain;
+    padding-inline: clamp(0.5rem, 2vw, 1.25rem);
+    box-sizing: border-box;
   }
 
-  /* ── The Card (The Dark Bordered Box) ── */
+  /* ── Card: open panel like Info / Studio (no brown slab behind copy) ── */
   .all-products__card {
     flex-shrink: 0;
     height: 100%;
@@ -114,10 +145,8 @@
     display: flex;
     flex-direction: column;
     text-decoration: none;
-    
-    /* This creates the unified dark frame around everything */
-    background: rgba(25, 16, 9, 0.84); 
-    padding: 1.5rem;      
+    background: transparent;
+    padding: 0 clamp(0.85rem, 2.5vw, 1.75rem);
     box-sizing: border-box;
     position: relative;
     transition: transform 0.3s ease;
@@ -144,18 +173,27 @@
     width: 100%;
     aspect-ratio: 1 / 1;
     flex-shrink: 0;
-    overflow: hidden;
-    margin-bottom: 1.5rem;
+    overflow: visible;
+    margin-bottom: clamp(1rem, 2vw, 1.5rem);
     position: relative;
+  }
+
+  .all-products__placeholder {
+    position: absolute;
+    inset: 0;
+    background: rgba(232, 226, 210, 0.06);
+    border-radius: 4px;
   }
 
   .all-products__img {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 4px;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -163,6 +201,20 @@
 
   .all-products__img.is-active {
     opacity: 1;
+  }
+
+  .all-products__frame-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 5;
+    display: block;
+    /* Between tight crop (~1.06) and info/studio drama (~1.35) */
+    transform: translate(-50%, -50%) scale(1.18);
   }
 
   /* ── Image gallery arrows ── */
@@ -181,12 +233,18 @@
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.2s ease, background 0.2s ease;
-    z-index: 2;
+    z-index: 6;
     padding: 0;
   }
 
   .all-products__img-wrapper:hover .all-products__arrow:not([hidden]) {
     opacity: 1;
+  }
+
+  @media (hover: none) {
+    .all-products__img-wrapper .all-products__arrow:not([hidden]) {
+      opacity: 0.88;
+    }
   }
 
   .all-products__arrow:hover {
@@ -196,46 +254,51 @@
   .all-products__arrow--prev { left: 0.6rem; }
   .all-products__arrow--next { right: 0.6rem; }
 
-  /* ── Info Area (Now inside the dark padding) ── */
+  /* ── Info: typography aligned with Info / Studio bio column ── */
   .all-products__info {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Pushes the price to the bottom if description is short */
-    gap: 0.5rem;
+    flex-grow: 1;
+    gap: clamp(0.5rem, 1.2vw, 0.85rem);
+    padding: 0 0.15rem;
+    min-height: 0;
   }
 
   .all-products__title {
     font-family: 'TTHoves', sans-serif;
-    font-size: 1rem;
+    font-size: clamp(0.95rem, 1.35vw, 1.15rem);
+    font-weight: 400;
     color: #e8e2d2;
     text-transform: lowercase;
     letter-spacing: 0.02em;
   }
 
   .all-products__description {
-    font-size: 0.75rem;
-    line-height: 1.5;
-    color: rgba(232, 226, 210, 0.5);
-    margin: 0.5rem 0;
-    /* Optional: limit description height to keep cards consistent */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: clamp(0.72rem, 1vw, 0.88rem);
+    line-height: 1.75;
+    color: rgba(232, 226, 210, 0.92);
+    margin: 0;
+    min-width: 0;
   }
 
   .all-products__price {
-    font-size: 0.85rem;
-    color: rgba(232, 226, 210, 0.4);
-    margin: 0; /* Removed margin-top to ensure it stays pinned to title */
+    font-size: clamp(0.72rem, 1vw, 0.85rem);
+    letter-spacing: 0.06em;
+    color: rgba(232, 226, 210, 0.72);
+    margin: 0;
+    text-transform: lowercase;
   }
 
-  /* ── Title + options row ── */
-  .all-products__main-content-row {
+  /* ── Title + options row (desktop); mobile grid splits via display:contents ── */
+  .all-products__head-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .all-products__options-wrap {
+    flex-shrink: 0;
   }
 
   /* ── Option dropdowns ── */
@@ -254,8 +317,8 @@
 
   .all-products__option-label {
     font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    color: rgba(232, 226, 210, 0.4);
+    letter-spacing: 0.1em;
+    color: rgba(232, 226, 210, 0.72);
     text-transform: lowercase;
   }
 
@@ -288,7 +351,7 @@
   }
 
   .all-products__option-select option {
-    background: #1a1009;
+    background: #271f16;
     color: #e8e2d2;
   }
 
@@ -307,9 +370,8 @@
   }
 
   .all-products__add-btn {
-    position: absolute;
-    bottom: 1.5rem;
-    right: 1.5rem;
+    align-self: center;
+    margin-top: 0.35rem;
     width: 36px;
     height: 36px;
     display: flex;
@@ -320,10 +382,186 @@
     color: #e8e2d2;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
   }
   .all-products__add-btn:hover {
     background: rgba(232, 226, 210, 0.08);
     border-color: rgba(232, 226, 210, 0.65);
+  }
+
+  @media (max-width: 749px) {
+    #shopify-section-{{ section.id }} {
+      height: auto;
+      min-height: 0;
+    }
+
+    .all-products {
+      height: auto;
+      min-height: calc(100dvh - 6rem);
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 1rem 1.1rem calc(1.25rem + var(--maw-mobile-nav-clearance, 4rem) + env(safe-area-inset-bottom, 0px));
+      box-sizing: border-box;
+    }
+
+    .all-products__frame {
+      flex: none;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .all-products__track {
+      flex-direction: column;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      gap: clamp(1.75rem, 5vw, 2.75rem);
+      overflow-x: hidden;
+      overflow-y: visible;
+      padding-inline: 0;
+      align-items: stretch;
+    }
+
+    .all-products__card {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      padding-inline: 0;
+    }
+
+    .all-products__info {
+      padding: 0;
+      display: grid;
+      /* Col 2 sizes to controls; description spans full width below with padding for + */
+      grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+      grid-template-rows: auto auto;
+      column-gap: 0.55rem;
+      row-gap: 0.65rem;
+      align-items: start;
+    }
+
+    .all-products__head-row {
+      display: contents;
+    }
+
+    .all-products__text-group {
+      grid-column: 1;
+      grid-row: 1;
+      min-width: 0;
+    }
+
+    .all-products__options-wrap {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: stretch;
+      text-align: right;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .all-products__options {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .all-products__option-group {
+      flex: 1 1 0;
+      min-width: 0;
+      align-items: stretch;
+    }
+
+    .all-products__option-group:only-child {
+      flex: 0 0 auto;
+      max-width: 100%;
+      align-self: flex-end;
+    }
+
+    .all-products__option-group:only-child .all-products__select-wrap {
+      width: auto;
+      max-width: min(7rem, 52vw);
+    }
+
+    .all-products__option-group:only-child .all-products__option-select {
+      width: auto;
+      min-width: 3.85rem;
+      max-width: 100%;
+    }
+
+    .all-products__option-label {
+      font-size: 0.52rem;
+      letter-spacing: 0.06em;
+      line-height: 1.2;
+    }
+
+    .all-products__select-wrap {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .all-products__option-select {
+      font-size: 0.56rem;
+      letter-spacing: 0.01em;
+      padding: 0.18rem 1.05rem 0.18rem 0.35rem;
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .all-products__select-chevron {
+      width: 8px;
+      height: 8px;
+      right: 0.3rem;
+    }
+
+    .all-products__description {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      min-width: 0;
+      /* Full-width copy; reserve only the + control (no whole option-column gutter) */
+      padding-right: calc(36px + 0.45rem);
+      box-sizing: border-box;
+    }
+
+    .all-products__add-btn {
+      grid-column: 2;
+      grid-row: 2;
+      align-self: start;
+      justify-self: end;
+      margin-top: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Photo sits slightly inside the decorative frame (tape border visible as mat) */
+    .all-products__img {
+      top: 6%;
+      left: 6%;
+      width: 88%;
+      height: 88%;
+    }
+
+    .all-products__placeholder {
+      inset: auto;
+      top: 6%;
+      left: 6%;
+      width: 88%;
+      height: 88%;
+    }
+
+    .all-products__frame-img {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .all-products__arrow {
+      display: none !important;
+    }
   }
 </style>
 
@@ -333,6 +571,8 @@
     const track = document.getElementById('all-products-track');
     if (!frame || !track) return;
 
+    const mqDesktop = window.matchMedia('(min-width: 750px)');
+
     let isDragging  = false;
     let startX      = 0;
     let scrollStart = 0;
@@ -341,6 +581,7 @@
     const DRAG_THRESHOLD = 6; // px before we call it a drag vs. a click
 
     frame.addEventListener('mousedown', (e) => {
+      if (!mqDesktop.matches) return;
       isDragging  = true;
       dragMoved   = false;
       startX      = e.pageX;
@@ -350,7 +591,7 @@
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
+      if (!isDragging || !mqDesktop.matches) return;
       const delta = startX - e.pageX;
       if (Math.abs(delta) > DRAG_THRESHOLD) dragMoved = true;
       track.scrollLeft = scrollStart + delta;
@@ -373,26 +614,32 @@
       });
     });
 
-    /* Touch support */
+    /* Touch: horizontal track scroll only on desktop layout */
     let touchStartX      = 0;
     let touchScrollStart = 0;
 
     track.addEventListener('touchstart', (e) => {
+      if (!mqDesktop.matches) return;
       touchStartX      = e.touches[0].pageX;
       touchScrollStart = track.scrollLeft;
       track.style.scrollBehavior = 'auto';
     }, { passive: true });
 
     track.addEventListener('touchmove', (e) => {
+      if (!mqDesktop.matches) return;
       const delta = touchStartX - e.touches[0].pageX;
       track.scrollLeft = touchScrollStart + delta;
     }, { passive: true });
 
     track.addEventListener('touchend', () => {
+      if (!mqDesktop.matches) return;
       track.style.scrollBehavior = 'smooth';
     });
 
-    /* ── Image gallery cycling ── */
+    const swipeMQ = window.matchMedia('(max-width: 749px)');
+    const SWIPE_MIN = 45;
+
+    /* ── Image gallery cycling (+ swipe on mobile, arrows hidden) ── */
     track.querySelectorAll('.all-products__img-wrapper').forEach((wrapper) => {
       const imgs    = wrapper.querySelectorAll('.all-products__img');
       const prevBtn = wrapper.querySelector('[data-arrow="prev"]');
@@ -409,15 +656,60 @@
         if (nextBtn) nextBtn.hidden = current === imgs.length - 1;
       }
 
+      function goPrev() {
+        if (current > 0) goTo(current - 1);
+      }
+
+      function goNext() {
+        if (current < imgs.length - 1) goTo(current + 1);
+      }
+
       prevBtn && prevBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (current > 0) goTo(current - 1);
+        goPrev();
       });
 
       nextBtn && nextBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (current < imgs.length - 1) goTo(current + 1);
+        goNext();
       });
+
+      let swipeTracking = false;
+      let swipeStartX = 0;
+      let swipeStartY = 0;
+
+      wrapper.addEventListener('touchstart', (e) => {
+        if (!swipeMQ.matches || e.touches.length !== 1) return;
+        swipeTracking = true;
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      wrapper.addEventListener('touchmove', (e) => {
+        if (!swipeTracking || !swipeMQ.matches) return;
+        const t = e.touches[0];
+        const dx = t.clientX - swipeStartX;
+        const dy = t.clientY - swipeStartY;
+        if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 12) swipeTracking = false;
+      }, { passive: true });
+
+      wrapper.addEventListener('touchend', (e) => {
+        if (!swipeTracking || !swipeMQ.matches) {
+          swipeTracking = false;
+          return;
+        }
+        swipeTracking = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - swipeStartX;
+        const dy = t.clientY - swipeStartY;
+        if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx > 0) goPrev();
+        else if (dx < 0) goNext();
+      }, { passive: true });
+
+      wrapper.addEventListener('touchcancel', () => {
+        swipeTracking = false;
+      }, { passive: true });
     });
   })();
 </script>

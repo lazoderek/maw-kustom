@@ -69,6 +69,10 @@
   <!-- Column 2 — Vertical nav links -->
   <ul class="nav-banner__links">
     {%- for link in section.settings.menu.links -%}
+      {%- assign nav_link_title_down = link.title | downcase | strip -%}
+      {%- if link.handle == 'works' or nav_link_title_down == 'works' -%}
+        {%- continue -%}
+      {%- endif -%}
       <li>
         <a
           href="{{ link.url }}"
