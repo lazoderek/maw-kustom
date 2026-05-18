@@ -23,21 +23,28 @@
           "settings": {
             "image": "shopify://shop_images/624987025_18100231456803134_8734677006840674794_n.jpg"
           }
+        },
+        "image_collage": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/collage.png"
+          }
         }
       },
       "block_order": [
         "image_PA93AQ",
-        "image_ibKei7"
+        "image_ibKei7",
+        "image_collage"
       ],
       "custom_css": [
         "/* Force the entire name to uppercase */.info-page__name {letter-spacing: 0.1em; /* Optional: adds breathing room for all-caps */}",
         " /* Target the stars specifically to adjust their size and alignment */.info-page__name span,.info-page__name {/* This targets the stars if you wrap them in a tag, but we can also use a broad character selector if needed */}"
       ],
       "settings": {
-        "name": "makayla <text style=\"text-transform: uppercase;\">M★A★W<text></text> <text style=\"text-transform: lowercase;\">wray<text></text></text></text>",
+        "name": "makayla M★A★W wray",
         "tagline": "designer & maker",
-        "bio": "<p>Based in [city], Makayla Wray is a self-taught designer and maker whose practice spans textile design, slow fashion, and wearable art.</p><p>Each piece is made to order from her studio, drawing on years of experience working with natural materials and an obsessive attention to construction.</p>",
-        "contact_label": "get in touch",
+        "bio": "<p>Based in New York City, Makayla Wray [ M A W ] is a designer and maker focused on textile design and high-level craftsmanship.<br/><br/>Each piece is produced to order in her studio, defined by a commitment to natural materials and precise construction. Her work is the result of a dedicated self-taught practice and a refined understanding of form and utility.<br/></p>",
+        "contact_label": "",
         "contact_url": "shopify://pages/info"
       }
     }

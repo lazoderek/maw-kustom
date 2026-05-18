@@ -3,8 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#FAF8F4">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  {%- assign _chrome = settings.browser_chrome_color | default: '#271f16' -%}
+  {%- comment -%} Android Chrome, older Safari; Safari 26+ mostly samples fixed strips (see theme.css). {%- endcomment -%}
+  <meta name="theme-color" content="{{ _chrome }}" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="{{ _chrome }}" media="(prefers-color-scheme: dark)">
+  <style id="maw-browser-chrome">
+    :root { --maw-safari-chrome: {{ _chrome }}; }
+  </style>
   <link rel="canonical" href="{{ canonical_url }}">
 
   {%- if settings.favicon != blank -%}
@@ -66,16 +72,21 @@
 
 <body x-data class="no-js:hidden">
 
+  {%- comment -%} Safari 26+: fixed strips (top + bottom) — meta theme-color is ignored. {%- endcomment -%}
+  <div class="safari-chrome-tint safari-chrome-tint--top" aria-hidden="true"></div>
+
   <!-- Skip to content (accessibility) -->
   <a class="skip-link" href="#MainContent">Skip to content</a>
 
-  <!-- Scrollable content window -->
-  <main id="MainContent" role="main" tabindex="-1">
+  <!-- Scrollable content window (info/studio: single scroll on main, not nested section scroll) -->
+  <main id="MainContent" class="{% if template.suffix == 'info' or template.suffix == 'studio' %}main--page-scroll{% endif %}" role="main" tabindex="-1">
     {{ content_for_layout }}
   </main>
 
   <!-- Fixed bottom navigation bar -->
   {% section 'global-nav' %}
+
+  <div class="safari-chrome-tint safari-chrome-tint--bottom" aria-hidden="true"></div>
 
   <!-- ── Libraries (CDN, loaded in order) ── -->
 

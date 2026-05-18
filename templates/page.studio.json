@@ -1,0 +1,34 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file may be updated by the Shopify admin.
+ * Assign this template to your Studio page (Online Store → Pages).
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "page-studio",
+      "blocks": {
+        "image_studio": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/studio.png"
+          }
+        }
+      },
+      "block_order": [
+        "image_studio"
+      ],
+      "settings": {
+        "name": "MAW studios",
+        "tagline": "workspace",
+        "bio": "<p>Operating from a shared creative workspace, MAW studios is where patterns are drafted, fabrics are handled, and each garment is cut and sewn by hand. The studio, shared with three fellow independent makers, is defined by natural light, accessible tools, and an environment built for production.</p>",
+        "contact_label": "",
+        "contact_url": ""
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

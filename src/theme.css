@@ -30,6 +30,18 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Keep field text selectable for editing, copy/paste, and autofill. */
+input,
+textarea,
+select,
+option,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 html {
@@ -37,10 +49,38 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Slightly smaller type scale on phones; nav keeps its own 16px em base (.nav-banner). */
+@media (max-width: 749px) {
+  html {
+    font-size: 14px;
+  }
+
+  /* Space for fixed bottom nav bar + safe area (see global-nav) */
+  :root {
+    --maw-mobile-nav-clearance: 4rem;
+  }
+
+  /*
+   * pan-x pan-y allows scroll but not pinch-zoom. `manipulation` explicitly allows
+   * pinch-zoom — iOS also often ignores viewport maximum-scale / user-scalable=no.
+   */
+  html,
+  body,
+  #MainContent {
+    touch-action: pan-x pan-y;
+  }
 }
 
 body {
   font-family: var(--font-sans);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+  overscroll-behavior: none;
   background-color: var(--color-cream);
   /* */
   background-image: url("https://cdn.shopify.com/s/files/1/0677/4472/7331/files/bg.png?v=1776670229");
@@ -63,6 +103,48 @@ body {
   min-height: 0; /* required for flex overflow to work */
   overflow: hidden;
   position: relative;
+}
+
+/* Long editorial pages: scroll here so sections stay simple (#MainContent overflow stays hidden otherwise). */
+#MainContent.main--page-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/*
+ * Safari 26+ (iOS/macOS) ignores <meta name="theme-color"> and samples fixed
+ * full-width bars at the top and bottom of the page (≈6px+ tall). Keep borders
+ * off these shims. See:
+ * https://grooovinger.com/notes/2026-02-27-safari-26-header-background
+ */
+.safari-chrome-tint {
+  display: none;
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  min-height: 6px;
+  background-color: var(--maw-safari-chrome, #271f16);
+  pointer-events: none;
+}
+
+.safari-chrome-tint--top {
+  top: 0;
+  z-index: 9990;
+}
+
+/* Above site nav so iOS can sample brown for the browser toolbar; still below .skip-link */
+.safari-chrome-tint--bottom {
+  bottom: 0;
+  z-index: 9995;
+}
+
+@media (max-width: 749px) {
+  .safari-chrome-tint--top,
+  .safari-chrome-tint--bottom {
+    display: block;
+  }
 }
 
 /* ── Skip link ── */

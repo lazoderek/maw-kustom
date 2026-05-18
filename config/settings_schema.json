@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "name": "Browser",
+    "settings": [
+      {
+        "type": "color",
+        "id": "browser_chrome_color",
+        "label": "Mobile Safari chrome",
+        "default": "#271f16",
+        "info": "Opaque color for mobile Safari/Android chrome and the navigation bar. Keep Navigation → Banner background on the same hex."
+      }
+    ]
+  }
+]

@@ -6,15 +6,31 @@
     2. Vertical list of nav links
     3. Wide editorial copy panel
     4. (Optional) cart / account icons
+  Phone: optional compact logo image at left of the same bar as links.
 {% endcomment %}
 
+{%- liquid
+  comment
+    One opaque color for Safari/Android chrome + nav bar so the UI bars match the bar (no translucent vs opaque mismatch).
+  endcomment
+  assign bar_fill = settings.browser_chrome_color | default: section.settings.bg_color | default: '#271f16'
+  assign mobile_logo_url = ''
+  if section.settings.mobile_logo != blank
+    assign mobile_logo_url = section.settings.mobile_logo | image_url: width: 480
+  endif
+  if mobile_logo_url == blank
+    assign mobile_logo_url = 'mobile-logo.png' | file_img_url: width: 480
+  endif
+-%}
+
+<div class="nav-banner-stack">
 <nav
   class="nav-banner"
   role="navigation"
   aria-label="Site navigation"
   data-section-id="{{ section.id }}"
   style="
-    --nav-bg:   {{ section.settings.bg_color    | default: '#0d0d0d' }};
+    --nav-bg:   {{ bar_fill }};
     --nav-fg:   {{ section.settings.text_color  | default: '#e8e2d2' }};
     --nav-mute: {{ section.settings.muted_color | default: '#7a6f5d' }};
   "
@@ -37,6 +53,18 @@
       &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}{% if section.settings.legal_text != blank %} &nbsp;{{ section.settings.legal_text }}{% endif %}
     </p>
   </div>
+
+  {%- if mobile_logo_url != blank -%}
+    <a href="{{ routes.root_url }}" class="nav-banner__mobile-logo-link" aria-label="{{ shop.name }}">
+      <img
+        class="nav-banner__mobile-logo-img"
+        src="{{ mobile_logo_url }}"
+        alt="{{ shop.name }}"
+        loading="eager"
+        decoding="async"
+      >
+    </a>
+  {%- endif -%}
 
   <!-- Column 2 — Vertical nav links -->
   <ul class="nav-banner__links">
@@ -69,6 +97,7 @@
     </div>
   {%- endif -%}
 </nav>
+</div>
 
 <style>
   @font-face {
@@ -86,12 +115,39 @@
     align-items: stretch;
     gap: clamp(1.5rem, 4vw, 4rem);
     padding: clamp(1.25rem, 2.5vw, 2rem) clamp(1.5rem, 4vw, 4rem);
-    background: rgba(25, 16, 9, 0.84);
+    background: {{ bar_fill }};
     color: var(--nav-fg);
     border-top: 1px solid rgba(255, 255, 255, 0.04);
     position: relative;
     isolation: isolate;
     margin: clamp(1rem, 3vw, 3rem) 0 2rem;
+    /* Fixed typography root so nav copy stays the same when html font-size drops on mobile. */
+    font-size: 16px;
+  }
+
+  /* Fixed bottom stack on phone only; normal block layout on larger breakpoints */
+  .nav-banner-stack {
+    flex-shrink: 0;
+  }
+
+  /* Inline mobile bar logo — hidden on large screens */
+  .nav-banner__mobile-logo-link {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-banner__mobile-logo-img {
+    display: block;
+    height: 1.85rem;
+    width: auto;
+    max-width: 4.75rem;
+    object-fit: contain;
+    object-position: left center;
   }
 
   /* ── Column 1 — Brand ── */
@@ -106,7 +162,7 @@
 
   .nav-banner__wordmark {
     font-family: var(--font-serif), Georgia, serif;
-    font-size: clamp(2.75rem, 5vw, 4.5rem);
+    font-size: clamp(2.75em, 5vw, 4.5em);
     font-weight: 600;
     font-style: italic;
     letter-spacing: 0.02em;
@@ -128,7 +184,7 @@
 
   .nav-banner__copyright {
     font-family: var(--font-sans);
-    font-size: 0.6rem;
+    font-size: 0.6em;
     letter-spacing: 0.08em;
     color: var(--nav-mute);
     line-height: 1.4;
@@ -151,7 +207,7 @@
   .nav-banner__link {
     /* font-family: var(--font-sans); */
     font-family: 'TTHoves', var(--font-sans), sans-serif;
-    font-size: clamp(0.78rem, 1vw, 0.95rem);
+    font-size: clamp(0.78em, 1vw, 0.95em);
     letter-spacing: 0.04em;
     color: var(--nav-fg);
     line-height: 1.7;
@@ -180,7 +236,7 @@
     border-left: none;
     padding-left: clamp(1rem, 2vw, 2rem);
     font-family: var(--font-sans);
-    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+    font-size: clamp(0.7em, 0.85vw, 0.82em);
     line-height: 1.65;
     color: var(--nav-mute);
     column-count: 2;
@@ -222,7 +278,7 @@
     right: -8px;
     background: var(--nav-fg);
     color: var(--nav-bg);
-    font-size: 0.55rem;
+    font-size: 0.55em;
     font-weight: 600;
     width: 14px;
     height: 14px;
@@ -271,6 +327,106 @@
       grid-row: 1;
     }
   }
+
+  /* ── Fixed phone bar: logo + links as a centered cluster ── */
+  @media (max-width: 749px) {
+    .nav-banner-stack {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 5000;
+      pointer-events: none;
+    }
+
+    .nav-banner-stack > * {
+      pointer-events: auto;
+    }
+
+    .nav-banner {
+      position: relative;
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+      min-height: 3rem;
+      padding-top: 0.5rem;
+      padding-left: max(1rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1rem, env(safe-area-inset-right, 0px));
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Space before links (flex gap is flaky on some iOS versions) */
+    .nav-banner__mobile-logo-link {
+      display: flex;
+      margin-inline-end: 1rem;
+    }
+
+    .nav-banner:has(.nav-banner__actions) {
+      padding-right: max(2.65rem, calc(0.65rem + env(safe-area-inset-right, 0px)));
+    }
+
+    /* Hide logo / wordmark on small screens (copyright lives here too—omitted for a slimmer bar) */
+    .nav-banner__brand {
+      display: none;
+    }
+
+    .nav-banner__links {
+      flex: 0 1 auto;
+      align-self: stretch;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: center;
+      align-content: center;
+      gap: 0.25rem 0.4rem;
+      border-top: none;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      width: auto;
+      max-width: none;
+    }
+
+    .nav-banner__links > li {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .nav-banner__link {
+      font-size: 0.72em;
+      line-height: 1;
+      text-transform: lowercase;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.45rem;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    .nav-banner__actions {
+      position: absolute;
+      right: max(0.65rem, env(safe-area-inset-right, 0px));
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+  }
 </style>
 
 {% schema %}
@@ -293,6 +449,12 @@
       "id": "logo",
       "label": "Logo image (optional)",
       "info": "Overrides the wordmark text."
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_logo",
+      "label": "Mobile logo",
+      "info": "Left of the menu links in the small-screen bar. If empty, theme looks for Files upload mobile-logo.png."
     },
     {
       "type": "text",
@@ -328,7 +490,7 @@
       "type": "color",
       "id": "bg_color",
       "label": "Banner background",
-      "default": "#0d0d0d"
+      "default": "#271f16"
     },
     {
       "type": "color",

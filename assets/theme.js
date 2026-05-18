@@ -6,6 +6,17 @@
  *   gsap, ScrollTrigger (GSAP), Alpine
  */
 
+// Pinch zoom: viewport meta alone is unreliable on iOS Safari; WebKit fires gesture* events.
+(function () {
+  var mq = window.matchMedia('(max-width: 749px)');
+  function blockPinch(e) {
+    if (mq.matches) e.preventDefault();
+  }
+  document.addEventListener('gesturestart', blockPinch, { passive: false });
+  document.addEventListener('gesturechange', blockPinch, { passive: false });
+  document.addEventListener('gestureend', blockPinch, { passive: false });
+})();
+
 // ── Alpine stores (registered before Alpine initialises the DOM) ───────────
 document.addEventListener('alpine:init', () => {
   Alpine.store('menu', {
