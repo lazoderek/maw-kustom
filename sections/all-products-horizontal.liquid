@@ -3,10 +3,6 @@
 {% endcomment %}
 
 <section class="all-products" data-section-id="{{ section.id }}">
-  {%- comment -%} Preserve manual breaks after strip_html (literal newlines + editor br/p). {%- endcomment -%}
-  {%- capture maw_product_desc_newline %}
-
-  {%- endcapture -%}
   <div class="all-products__frame" id="all-products-frame">
     <div class="all-products__track" id="all-products-track">
 
@@ -76,22 +72,10 @@
               </div>
             </div>
 
-            {%- liquid
-              assign _pd = product.description
-              assign _pd = _pd | replace: '</p>', '[[MAW_DESC_BR]]'
-              assign _pd = _pd | replace: '<br />', '[[MAW_DESC_BR]]'
-              assign _pd = _pd | replace: '<br/>', '[[MAW_DESC_BR]]'
-              assign _pd = _pd | replace: '<br>', '[[MAW_DESC_BR]]'
-              assign _pd = _pd | strip_html | strip
-              assign _pd = _pd | replace: maw_product_desc_newline, '[[MAW_DESC_BR]]'
-              assign _pd_parts = _pd | split: '[[MAW_DESC_BR]]'
-            -%}
-            <p class="all-products__description">
-              {%- for _pd_part in _pd_parts -%}
-                {{- _pd_part | strip -}}
-                {%- unless forloop.last -%}<br />{%- endunless -%}
-              {%- endfor -%}
-            </p>
+            {%- comment -%} Rich HTML (links, paragraphs). Typography locked via .all-products__description descendant rules. {%- endcomment -%}
+            <div class="all-products__description">
+              {{ product.description }}
+            </div>
 
             <button class="all-products__add-btn" type="button" aria-label="Add to cart">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
@@ -279,6 +263,57 @@
     color: rgba(232, 226, 210, 0.92);
     margin: 0;
     min-width: 0;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  /* Neutralize RTE/browser defaults so markup matches the former plain-text card */
+  .all-products__description :where(p, li, span, div, blockquote) {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+
+  .all-products__description p {
+    margin: 0 0 0.65em;
+  }
+
+  .all-products__description p:last-child {
+    margin-bottom: 0;
+  }
+
+  .all-products__description ul,
+  .all-products__description ol {
+    margin: 0 0 0.65em;
+    padding-left: 1.15em;
+    color: inherit;
+  }
+
+  .all-products__description strong,
+  .all-products__description b {
+    font-weight: 600;
+    color: inherit;
+  }
+
+  .all-products__description em,
+  .all-products__description i {
+    font-style: italic;
+    color: inherit;
+  }
+
+  /* Same cream as body copy — underline only (no default link blue) */
+  .all-products__description a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(232, 226, 210, 0.35);
+    text-underline-offset: 0.18em;
+  }
+
+  .all-products__description a:hover {
+    text-decoration-color: rgba(232, 226, 210, 0.65);
   }
 
   .all-products__price {
@@ -582,6 +617,7 @@
 
     frame.addEventListener('mousedown', (e) => {
       if (!mqDesktop.matches) return;
+      if (e.target.closest('a[href]')) return;
       isDragging  = true;
       dragMoved   = false;
       startX      = e.pageX;
@@ -620,6 +656,7 @@
 
     track.addEventListener('touchstart', (e) => {
       if (!mqDesktop.matches) return;
+      if (e.target.closest('a[href]')) return;
       touchStartX      = e.touches[0].pageX;
       touchScrollStart = track.scrollLeft;
       track.style.scrollBehavior = 'auto';

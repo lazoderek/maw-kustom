@@ -27,37 +27,36 @@
 <style>
   .home-hero {
     width: 100%;
-    /* Ensure the section fills the viewport height minus any padding */
-    height: calc(100vh - clamp(2rem, 6vw, 6rem)); 
+    /* Match #MainContent: flex child already spans viewport minus bottom nav */
+    height: 100%;
+    min-height: 0;
     padding: clamp(1rem, 3vw, 3rem);
     box-sizing: border-box;
     display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 749px) {
+    .home-hero {
+      /* Full bleed left/right; breathe away from top/bottom of the content window */
+      padding: clamp(0.625rem, 2.5vmin, 1.25rem) 0;
+    }
   }
 
   .home-hero__frame {
     flex: 1;
+    min-height: 0;
     overflow: hidden;
     position: relative;
   }
 
-  /* always show the full height */
   .home-hero__img {
     display: block;
-    height: 90%;
-    width: auto;      /* Maintain aspect ratio based on height */
-    min-width: 100%;  /* Ensure it never leaves gaps on the sides */
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    object-position: center;
   }
-
-  /* opposite of above
-  .home-hero__img {
-    display: block;
-    width: 100%;      /* Force it to follow the X-axis scaling */
-    height: 100%;     /* Force it to fill the Y-axis */
-    object-fit: cover; /* This is the magic: it scales to fill while cropping overflow */
-    object-position: center; /* Keeps the doll/center art focused */
-  }
-  */
 </style>
 
 {% schema %}
