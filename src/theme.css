@@ -59,9 +59,12 @@ html {
     font-size: 14px;
   }
 
-  /* Space for fixed bottom nav bar + safe area (see global-nav) */
+  /*
+   * Reserve only the fixed bar’s footprint (~min-height + vertical padding in
+   * global-nav). Using 4rem left a persistent band between the hero and nav.
+   */
   :root {
-    --maw-mobile-nav-clearance: 4rem;
+    --maw-mobile-nav-clearance: 3.35rem;
   }
 
   /*
