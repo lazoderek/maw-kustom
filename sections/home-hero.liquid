@@ -2,45 +2,67 @@
   Home hero — single full-bleed image filling the viewport above the nav-banner.
 {% endcomment %}
 
-<section class="home-hero" data-section-id="{{ section.id }}">
+<section class="home-hero" data-section-id="{{ section.id }}" data-maw-home-hero>
+  <span class="home-hero__gutter" aria-hidden="true"></span>
   <div class="home-hero__frame">
-    {%- if section.settings.image != blank -%}
-      <img
-        class="home-hero__img"
-        src="{{ section.settings.image | image_url: width: 2400 }}"
-        srcset="
-          {{ section.settings.image | image_url: width: 1200 }} 1200w,
-          {{ section.settings.image | image_url: width: 1800 }} 1800w,
-          {{ section.settings.image | image_url: width: 2400 }} 2400w,
-          {{ section.settings.image | image_url: width: 3200 }} 3200w"
-        sizes="100vw"
-        alt="{{ section.settings.image.alt | default: shop.name }}"
-        width="{{ section.settings.image.width }}"
-        height="{{ section.settings.image.height }}"
-        loading="eager"
-        fetchpriority="high"
-      >
-    {%- endif -%}
+    <div class="home-hero__pan">
+      {%- if section.settings.image != blank -%}
+        <div class="home-hero__track">
+          <img
+            class="home-hero__img"
+            src="{{ section.settings.image | image_url: width: 2400 }}"
+            srcset="
+              {{ section.settings.image | image_url: width: 1200 }} 1200w,
+              {{ section.settings.image | image_url: width: 1800 }} 1800w,
+              {{ section.settings.image | image_url: width: 2400 }} 2400w,
+              {{ section.settings.image | image_url: width: 3200 }} 3200w"
+            sizes="(max-width: 749px) 2400px, 100vw"
+            alt="{{ section.settings.image.alt | default: shop.name }}"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+            loading="eager"
+            fetchpriority="high"
+          >
+          <img
+            class="home-hero__img home-hero__img--clone"
+            src="{{ section.settings.image | image_url: width: 2400 }}"
+            srcset="
+              {{ section.settings.image | image_url: width: 1200 }} 1200w,
+              {{ section.settings.image | image_url: width: 1800 }} 1800w,
+              {{ section.settings.image | image_url: width: 2400 }} 2400w,
+              {{ section.settings.image | image_url: width: 3200 }} 3200w"
+            sizes="(max-width: 749px) 2400px, 100vw"
+            alt=""
+            aria-hidden="true"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+            loading="lazy"
+            decoding="async"
+          >
+        </div>
+      {%- endif -%}
+    </div>
   </div>
+  <span class="home-hero__gutter" aria-hidden="true"></span>
 </section>
 
 <style>
-  .home-hero {
-    width: 100%;
-    /* Match #MainContent: flex child already spans viewport minus bottom nav */
+  /* Wrapper #shopify-section-* defaults to auto height; stretch it or % heights never apply. */
+  #shopify-section-{{ section.id }} {
     height: 100%;
     min-height: 0;
-    padding: clamp(1rem, 3vw, 3rem);
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
   }
 
-  @media (max-width: 749px) {
-    .home-hero {
-      /* Full bleed left/right; breathe away from top/bottom of the content window */
-      padding: clamp(0.625rem, 2.5vmin, 1.25rem) 0;
-    }
+  .home-hero {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    padding: clamp(1rem, 3vw, 3rem);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
   }
 
   .home-hero__frame {
@@ -50,12 +72,184 @@
     position: relative;
   }
 
+  /* Inert on desktop; mobile overrides to clipping overflow for pan. */
+  .home-hero__pan {
+    display: contents;
+  }
+
+  .home-hero__track {
+    display: contents;
+  }
+
+  .home-hero__img--clone {
+    display: none;
+  }
+
   .home-hero__img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
+  }
+
+  /* Mobile gutters: real DOM + fixed height (flex-grow ratios made ::before/::after ~0px). */
+  .home-hero__gutter {
+    display: none;
+  }
+
+  @media (max-width: 749px) {
+    /*
+      Nav is position:fixed — cap section height (theme nav clearance).
+      Equal top/bottom inset: two flex rows with the same explicit height.
+    */
+    #shopify-section-{{ section.id }} {
+      height: calc(100dvh - var(--maw-mobile-nav-clearance, 4rem));
+      min-height: calc(100dvh - var(--maw-mobile-nav-clearance, 4rem));
+    }
+
+    .home-hero {
+      padding: 0;
+    }
+
+    .home-hero__gutter {
+      display: block;
+      flex: 0 0 auto;
+      height: clamp(1rem, 4.5vmin, 2rem);
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .home-hero__frame {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+
+    .home-hero__pan {
+      --maw-hero-overlap: clamp(1.125rem, 5.5vw, 3rem);
+
+      display: block;
+      position: absolute;
+      inset: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: none;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      touch-action: none;
+    }
+
+    .home-hero__pan::-webkit-scrollbar {
+      display: none;
+    }
+
+    .home-hero__track {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      height: 100%;
+      width: max-content;
+    }
+
+    /*
+      Two slightly wider-than-viewport panels, overlapping: duplicate sits under
+      the feathered right edge of the first so the wrap is blended, not a hard cut.
+    */
+    .home-hero__img,
+    .home-hero__img--clone {
+      display: block;
+    }
+
+    /*
+      Pan uses the image's true aspect at full frame height (like desktop scale),
+      not 100vw-wide panels — so the full collage width scrolls slowly. min-width
+      keeps a floor for tall/narrow art. sizes=2400px on small screens pulls a
+      sharp src from srcset (100vw was under-sizing the decode).
+    */
+    .home-hero__track .home-hero__img {
+      position: relative;
+      left: auto;
+      top: auto;
+      right: auto;
+      bottom: auto;
+      display: block;
+      flex: 0 0 auto;
+      width: auto;
+      height: 100%;
+      min-width: calc(100dvw + var(--maw-hero-overlap));
+      max-width: none;
+      object-fit: cover;
+      object-position: center;
+      {%- if section.settings.image != blank -%}
+      aspect-ratio: {{ section.settings.image.aspect_ratio }};
+      {%- endif -%}
+    }
+
+    /*
+      Feather only at the join: leading panel fades on the right, clone fades on
+      the left. Screen edges stay opaque (no pan-level mask).
+    */
+    .home-hero__track .home-hero__img:not(.home-hero__img--clone) {
+      -webkit-mask-image: linear-gradient(
+        to right,
+        #fff 0,
+        #fff calc(100% - var(--maw-hero-overlap)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        #fff 0,
+        #fff calc(100% - var(--maw-hero-overlap)),
+        transparent 100%
+      );
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+
+    .home-hero__track .home-hero__img--clone {
+      margin-left: calc(-1 * var(--maw-hero-overlap));
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #fff var(--maw-hero-overlap),
+        #fff 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #fff var(--maw-hero-overlap),
+        #fff 100%
+      );
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+  }
+
+  @media (max-width: 749px) and (prefers-reduced-motion: reduce) {
+    .home-hero__img--clone {
+      display: none;
+    }
+
+    .home-hero__pan {
+      overflow-x: hidden;
+    }
+
+    .home-hero__track .home-hero__img {
+      flex: 0 0 100dvw;
+      width: 100dvw;
+      min-width: 100dvw;
+      max-width: none;
+      aspect-ratio: unset;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
   }
 </style>
 

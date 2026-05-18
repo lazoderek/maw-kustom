@@ -133,6 +133,92 @@ function initParallax(scope) {
   });
 }
 
+// ── Home hero: slow horizontal pan (mobile, horizontal scroll — reliable on iOS) ─
+function bindMediaChange(mq, fn) {
+  if (mq.addEventListener) mq.addEventListener('change', fn);
+  else if (mq.addListener) mq.addListener(fn);
+}
+
+function unbindMediaChange(mq, fn) {
+  if (!fn) return;
+  if (mq.removeEventListener) mq.removeEventListener('change', fn);
+  else if (mq.removeListener) mq.removeListener(fn);
+}
+
+function initHomeHeroPan(scope) {
+  const root = scope && scope.nodeType === 1 ? scope : document;
+  root.querySelectorAll('[data-maw-home-hero]').forEach((hero) => {
+    const pan = hero.querySelector('.home-hero__pan');
+    if (!pan) return;
+
+    const DURATION_MS = 98000;
+    const mq = window.matchMedia('(max-width: 749px)');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function stopLoop() {
+      if (pan._mawHeroPanRaf != null) {
+        cancelAnimationFrame(pan._mawHeroPanRaf);
+        pan._mawHeroPanRaf = null;
+      }
+      pan._mawHeroPanStart = null;
+      pan.scrollLeft = 0;
+    }
+
+    function maxScroll() {
+      return Math.max(0, pan.scrollWidth - pan.clientWidth);
+    }
+
+    /** One loop stride: first panel width + clone's negative margin (overlap). */
+    function travelPx() {
+      const maxS = maxScroll();
+      const first = pan.querySelector('.home-hero__track .home-hero__img');
+      const second = pan.querySelector('.home-hero__img--clone');
+      if (!first || first.offsetWidth <= 0) return maxS;
+      if (
+        second
+        && window.getComputedStyle(second).display !== 'none'
+      ) {
+        const ml = parseFloat(window.getComputedStyle(second).marginLeft, 10) || 0;
+        const step = first.offsetWidth + ml;
+        if (step > 0) return Math.min(step, maxS);
+      }
+      return Math.min(first.offsetWidth, maxS);
+    }
+
+    function loop(now) {
+      pan._mawHeroPanRaf = null;
+      if (!mq.matches || reduce.matches) {
+        pan.scrollLeft = 0;
+        return;
+      }
+      const ms = travelPx();
+      if (ms <= 1) {
+        pan._mawHeroPanRaf = requestAnimationFrame(loop);
+        return;
+      }
+      if (pan._mawHeroPanStart == null) pan._mawHeroPanStart = now;
+      /* Linear 0 → 1 per DURATION_MS, repeat (duplicate strip hides the wrap). */
+      const t = (now - pan._mawHeroPanStart) % DURATION_MS;
+      const u = t / DURATION_MS;
+      pan.scrollLeft = u * ms;
+      pan._mawHeroPanRaf = requestAnimationFrame(loop);
+    }
+
+    function kick() {
+      stopLoop();
+      if (!mq.matches || reduce.matches) return;
+      pan._mawHeroPanRaf = requestAnimationFrame(loop);
+    }
+
+    unbindMediaChange(mq, pan._mawHeroPanKick);
+    unbindMediaChange(reduce, pan._mawHeroPanKick);
+    pan._mawHeroPanKick = kick;
+    bindMediaChange(mq, kick);
+    bindMediaChange(reduce, kick);
+    kick();
+  });
+}
+
 // ── Marquee ticker ─────────────────────────────────────────────────────────
 function initMarquee(scope) {
   const root = scope || document;
@@ -191,14 +277,31 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrapbookScroll();
   initParallax();
   initMarquee();
+  initHomeHeroPan();
   updateCartCount();
 });
 
 // Re-init after Shopify theme editor loads a section
+document.addEventListener('shopify:section:unload', (e) => {
+  const hero = e.target.querySelector('[data-maw-home-hero]');
+  if (!hero) return;
+  const pan = hero.querySelector('.home-hero__pan');
+  if (!pan) return;
+  const kick = pan._mawHeroPanKick;
+  const mq = window.matchMedia('(max-width: 749px)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  unbindMediaChange(mq, kick);
+  unbindMediaChange(reduce, kick);
+  if (pan._mawHeroPanRaf != null) cancelAnimationFrame(pan._mawHeroPanRaf);
+  pan._mawHeroPanRaf = null;
+  pan._mawHeroPanKick = null;
+});
+
 document.addEventListener('shopify:section:load', (e) => {
   const section = e.target;
   ScrollTrigger.refresh();
   initReveal(section);
   initScrapbookScroll(section);
   initMarquee(section);
+  initHomeHeroPan(section);
 });
