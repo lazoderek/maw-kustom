@@ -247,6 +247,12 @@ function updateCartCount() {
       document.querySelectorAll('[data-cart-count]').forEach((b) => {
         b.textContent = cart.item_count;
         b.hidden = cart.item_count === 0;
+        if (b.classList && b.classList.contains('nav-banner__cart-pill')) {
+          const label = cart.item_count === 0
+            ? 'Cart'
+            : `Cart, ${cart.item_count} ${cart.item_count === 1 ? 'item' : 'items'}`;
+          b.setAttribute('aria-label', label);
+        }
       });
       if (typeof Alpine !== 'undefined' && Alpine.store('cart')) {
         Alpine.store('cart').count = cart.item_count;

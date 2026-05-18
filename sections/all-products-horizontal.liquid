@@ -10,7 +10,7 @@
         {%- assign product_is_first = forloop.first -%}
         {%- comment -%} Frames frame-2 … frame-4 (n+1 offset vs gallery); cycles for longer collections. {%- endcomment -%}
         {%- assign product_frame_i = forloop.index0 | modulo: 3 | plus: 2 -%}
-        <div class="all-products__card" draggable="false">
+        <div class="all-products__card" draggable="false" data-product-id="{{ product.id }}">
           
           <div class="all-products__img-wrapper">
             {%- for image in product.images -%}
@@ -77,14 +77,16 @@
               {{ product.description }}
             </div>
 
-            <button class="all-products__add-btn" type="button" aria-label="Add to cart">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+            <button class="all-products__add-btn" type="button" aria-label="{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}" data-add-to-cart>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
                 <line x1="7" y1="1" x2="7" y2="13"/>
                 <line x1="1" y1="7" x2="13" y2="7"/>
               </svg>
             </button>
           </div>
-          
+
+          <script type="application/json" data-all-products-variants>{{ product.variants | json }}</script>
+
         </div>
       {%- endfor -%}
 
@@ -424,6 +426,16 @@
     border-color: rgba(232, 226, 210, 0.65);
   }
 
+  .all-products__add-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .all-products__add-btn[aria-busy='true'] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
   @media (max-width: 749px) {
     #shopify-section-{{ section.id }} {
       height: auto;
@@ -617,7 +629,7 @@
 
     frame.addEventListener('mousedown', (e) => {
       if (!mqDesktop.matches) return;
-      if (e.target.closest('a[href]')) return;
+      if (e.target.closest('a[href], button, select, input, textarea, label')) return;
       isDragging  = true;
       dragMoved   = false;
       startX      = e.pageX;
@@ -656,7 +668,7 @@
 
     track.addEventListener('touchstart', (e) => {
       if (!mqDesktop.matches) return;
-      if (e.target.closest('a[href]')) return;
+      if (e.target.closest('a[href], button, select, input, textarea, label')) return;
       touchStartX      = e.touches[0].pageX;
       touchScrollStart = track.scrollLeft;
       track.style.scrollBehavior = 'auto';
@@ -747,6 +759,88 @@
       wrapper.addEventListener('touchcancel', () => {
         swipeTracking = false;
       }, { passive: true });
+    });
+
+    function getCardVariants(card) {
+      const el = card.querySelector('script[type="application/json"][data-all-products-variants]');
+      if (!el) return [];
+      try {
+        return JSON.parse(el.textContent);
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function getSelectedVariant(card) {
+      const variants = getCardVariants(card);
+      if (!variants.length) return null;
+      const selects = card.querySelectorAll('.all-products__option-select');
+      if (!selects.length) {
+        return variants.find((v) => v.available) || variants[0];
+      }
+      const selected = Array.from(selects).map((s) => s.value);
+      return variants.find(
+        (v) =>
+          v.options.length === selected.length &&
+          v.options.every((opt, i) => opt === selected[i]),
+      ) || null;
+    }
+
+    function syncAddButton(card) {
+      const btn = card.querySelector('[data-add-to-cart]');
+      if (!btn) return;
+      const def = btn.getAttribute('data-default-label') || 'Add to cart';
+      const v = getSelectedVariant(card);
+      const ok = v && v.available;
+      btn.disabled = !ok;
+      if (!v) {
+        btn.setAttribute('aria-label', def);
+      } else if (!ok) {
+        btn.setAttribute('aria-label', 'Sold out');
+      } else {
+        btn.setAttribute('aria-label', def);
+      }
+    }
+
+    track.querySelectorAll('.all-products__card').forEach((card) => {
+      const btn = card.querySelector('[data-add-to-cart]');
+      if (btn && !btn.getAttribute('data-default-label')) {
+        btn.setAttribute('data-default-label', btn.getAttribute('aria-label') || 'Add to cart');
+      }
+      syncAddButton(card);
+      card.querySelectorAll('.all-products__option-select').forEach((sel) => {
+        sel.addEventListener('change', () => syncAddButton(card));
+      });
+    });
+
+    track.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-add-to-cart]');
+      if (!btn || !track.contains(btn)) return;
+      e.preventDefault();
+      const card = btn.closest('.all-products__card');
+      if (!card || btn.disabled) return;
+      const v = getSelectedVariant(card);
+      if (!v || !v.available) return;
+      if (!window.MAWCart || typeof window.MAWCart.add !== 'function') return;
+
+      const defaultLabel = btn.getAttribute('data-default-label') || 'Add to cart';
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+      let added = false;
+      try {
+        await window.MAWCart.add({ id: v.id, quantity: 1 });
+        added = true;
+      } catch (err) {
+        console.error(err);
+        btn.setAttribute('aria-label', 'Could not add — try again');
+        setTimeout(() => {
+          btn.setAttribute('aria-label', defaultLabel);
+          syncAddButton(card);
+        }, 2200);
+      } finally {
+        btn.removeAttribute('aria-busy');
+      }
+      if (added) syncAddButton(card);
     });
   })();
 </script>

@@ -5,8 +5,9 @@
     1. Wordmark + tiny copyright line
     2. Vertical list of nav links
     3. Wide editorial copy panel
-    4. (Optional) cart / account icons
-  Phone: optional compact logo image at left of the same bar as links.
+    4. (Optional) cart / account icons (tablet/desktop; hidden on phone)
+  Phone (≤749px): CSS grid 1fr / auto / 1fr — mobile logo (start), links (center),
+    rounded cart count pill (end). Pill is hidden when the cart is empty.
 {% endcomment %}
 
 {%- liquid
@@ -83,6 +84,15 @@
     {%- endfor -%}
   </ul>
 
+  <!-- Mobile-only: cart count pill (hidden when empty; theme.js updateCartCount) -->
+  <a
+    href="{{ routes.cart_url }}"
+    class="nav-banner__cart-pill"
+    data-cart-count
+    aria-label="{% if cart.item_count > 0 -%}Cart, {{ cart.item_count }} {%- if cart.item_count == 1 -%}item{%- else -%}items{%- endif -%}{%- else -%}Cart{%- endif -%}"
+    {% if cart.item_count == 0 %}hidden{% endif %}
+  >{{ cart.item_count }}</a>
+
   <!-- Column 3 — Editorial copy panel -->
   {%- if section.settings.panel_text != blank -%}
     <div class="nav-banner__panel">{{ section.settings.panel_text }}</div>
@@ -152,6 +162,11 @@
     max-width: 4.75rem;
     object-fit: contain;
     object-position: left center;
+  }
+
+  /* Mobile-only cart (desktop / tablet use optional icon actions) */
+  .nav-banner__cart-pill {
+    display: none;
   }
 
   /* ── Column 1 — Brand ── */
@@ -352,11 +367,10 @@
       margin: 0;
       width: 100%;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: center;
+      column-gap: 0.5rem;
       min-height: 3rem;
       padding-top: 0.5rem;
       padding-left: max(1rem, env(safe-area-inset-left, 0px));
@@ -366,14 +380,13 @@
       backdrop-filter: blur(10px);
     }
 
-    /* Space before links (flex gap is flaky on some iOS versions) */
     .nav-banner__mobile-logo-link {
       display: flex;
-      margin-inline-end: 1rem;
-    }
-
-    .nav-banner:has(.nav-banner__actions) {
-      padding-right: max(2.65rem, calc(0.65rem + env(safe-area-inset-right, 0px)));
+      grid-column: 1;
+      grid-row: 1;
+      justify-self: start;
+      align-self: center;
+      margin: 0;
     }
 
     /* Hide logo / wordmark on small screens (copyright lives here too—omitted for a slimmer bar) */
@@ -382,23 +395,24 @@
     }
 
     .nav-banner__links {
-      flex: 0 1 auto;
-      align-self: stretch;
-      min-height: 0;
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: center;
+      align-self: center;
       min-width: 0;
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
       align-content: center;
       gap: 0.25rem 0.4rem;
       border-top: none;
-      padding: 0;
+      padding: 0 0 0 1.65rem;
       margin: 0;
       list-style: none;
       width: auto;
-      max-width: none;
+      max-width: 100%;
     }
 
     .nav-banner__links > li {
@@ -421,14 +435,46 @@
       box-sizing: border-box;
     }
 
-    .nav-banner__actions {
-      position: absolute;
-      right: max(0.65rem, env(safe-area-inset-right, 0px));
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
+    .nav-banner__cart-pill {
+      grid-column: 3;
+      grid-row: 1;
+      justify-self: end;
+      align-self: center;
+      display: inline-flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: center;
+      box-sizing: border-box;
+      min-width: 1.75rem;
+      padding: 0.28rem 0.5rem;
+      border-radius: 0.375rem;
+      font-family: 'TTHoves', var(--font-sans), sans-serif;
+      font-size: 0.72em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      color: var(--nav-fg);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-banner__cart-pill[hidden] {
+      display: none !important;
+    }
+
+    .nav-banner__cart-pill:hover {
+      background: rgba(255, 255, 255, 0.22);
+      color: var(--nav-fg);
+    }
+
+    .nav-banner__cart-pill:focus-visible {
+      outline: 2px solid var(--nav-fg);
+      outline-offset: 2px;
+    }
+
+    /* Icon row is for tablet/desktop only */
+    .nav-banner__actions {
+      display: none;
     }
   }
 </style>
