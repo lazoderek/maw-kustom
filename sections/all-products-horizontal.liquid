@@ -96,6 +96,15 @@
         </div>
       {%- endif -%}
 
+      {%- if settings.stockists != blank -%}
+        <aside class="all-products__stockists" aria-label="{{ settings.stockists_heading | default: 'Stockists' }}">
+          {%- if settings.stockists_heading != blank -%}
+            <h2 class="all-products__stockists-heading">{{ settings.stockists_heading }}</h2>
+          {%- endif -%}
+          <div class="all-products__stockists-list">{{ settings.stockists }}</div>
+        </aside>
+      {%- endif -%}
+
     </div>
   </div>
 </section>
@@ -108,31 +117,35 @@
     flex-direction: column;
   }
 
-  /* ── Horizontal scroll track ── */
+  /* ── Horizontal scroll track (desktop): fixed card size, clip overflow — no vw scaling ── */
   .all-products__track {
     display: flex;
     height: 100%;
-    /* Gap + card inline padding: frames scale past the card box; need real air between visuals */
-    gap: clamp(2rem, 6vw, 4rem);
+    gap: 4rem;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
     align-items: stretch;
     overscroll-behavior-x: contain;
-    padding-inline: clamp(0.5rem, 2vw, 1.25rem);
+    padding-inline: 1.25rem;
     box-sizing: border-box;
+  }
+
+  .all-products__track::-webkit-scrollbar {
+    display: none;
   }
 
   /* ── Card: open panel like Info / Studio (no brown slab behind copy) ── */
   .all-products__card {
-    flex-shrink: 0;
+    flex: 0 0 620px;
+    width: 620px;
+    min-width: 620px;
     height: 100%;
-    width: clamp(300px, 42vw, 620px);
     display: flex;
     flex-direction: column;
     text-decoration: none;
     background: transparent;
-    padding: 0 clamp(0.85rem, 2.5vw, 1.75rem);
+    padding: 0 1.75rem;
     box-sizing: border-box;
     position: relative;
     transition: transform 0.3s ease;
@@ -143,14 +156,16 @@
   /* ── The Square Image Crop ── */
   .all-products {
     width: 100%;
-    height: calc(100vh - clamp(2rem, 6vw, 6rem));
-    padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 3vw, 3rem) 0;
+    height: calc(100vh - 6rem);
+    padding: 3rem 3rem 0;
     box-sizing: border-box;
     display: flex;
+    overflow: hidden;
   }
 
   .all-products__frame {
     flex: 1;
+    min-width: 0;
     overflow: hidden;
     position: relative;
   }
@@ -160,7 +175,7 @@
     aspect-ratio: 1 / 1;
     flex-shrink: 0;
     overflow: visible;
-    margin-bottom: clamp(1rem, 2vw, 1.5rem);
+    margin-bottom: 1.5rem;
     position: relative;
   }
 
@@ -240,19 +255,46 @@
   .all-products__arrow--prev { left: 0.6rem; }
   .all-products__arrow--next { right: 0.6rem; }
 
-  /* ── Info: typography aligned with Info / Studio bio column ── */
+  /* ── Info: title/options row 1, description + add button row 2 ── */
   .all-products__info {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    grid-template-rows: auto auto;
+    column-gap: 1rem;
+    row-gap: 0.85rem;
+    align-items: start;
+    align-content: start;
     flex-grow: 1;
-    gap: clamp(0.5rem, 1.2vw, 0.85rem);
     padding: 0 0.15rem;
     min-height: 0;
   }
 
+  .all-products__head-row {
+    display: contents;
+  }
+
+  .all-products__text-group {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .all-products__options-wrap {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: stretch;
+    text-align: right;
+    min-width: 0;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+
   .all-products__title {
     font-family: 'TTHoves', sans-serif;
-    font-size: clamp(0.95rem, 1.35vw, 1.15rem);
+    font-size: 1.15rem;
     font-weight: 400;
     color: #e8e2d2;
     text-transform: lowercase;
@@ -260,11 +302,15 @@
   }
 
   .all-products__description {
-    font-size: clamp(0.72rem, 1vw, 0.88rem);
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 0.88rem;
     line-height: 1.75;
     color: rgba(232, 226, 210, 0.92);
     margin: 0;
     min-width: 0;
+    padding-right: calc(36px + 0.45rem);
+    box-sizing: border-box;
     user-select: text;
     -webkit-user-select: text;
   }
@@ -319,23 +365,11 @@
   }
 
   .all-products__price {
-    font-size: clamp(0.72rem, 1vw, 0.85rem);
+    font-size: 0.85rem;
     letter-spacing: 0.06em;
     color: rgba(232, 226, 210, 0.72);
     margin: 0;
     text-transform: lowercase;
-  }
-
-  /* ── Title + options row (desktop); mobile grid splits via display:contents ── */
-  .all-products__head-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .all-products__options-wrap {
-    flex-shrink: 0;
   }
 
   /* ── Option dropdowns ── */
@@ -357,12 +391,6 @@
     letter-spacing: 0.1em;
     color: rgba(232, 226, 210, 0.72);
     text-transform: lowercase;
-  }
-
-  .all-products__text-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem; /* Adjust this for the exact tightness you want */
   }
 
   .all-products__select-wrap {
@@ -407,18 +435,23 @@
   }
 
   .all-products__add-btn {
-    align-self: center;
-    margin-top: 0.35rem;
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    justify-self: end;
     width: 36px;
     height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
     background: transparent;
     border: 1px solid rgba(232, 226, 210, 0.35);
     color: #e8e2d2;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
     flex-shrink: 0;
   }
   .all-products__add-btn:hover {
@@ -426,14 +459,83 @@
     border-color: rgba(232, 226, 210, 0.65);
   }
 
-  .all-products__add-btn:disabled {
+  .all-products__add-btn:disabled:not([aria-busy='true']) {
     opacity: 0.35;
     cursor: not-allowed;
+  }
+
+  .all-products__add-btn:disabled:not([aria-busy='true'])::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140%;
+    height: 1px;
+    background: currentColor;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    pointer-events: none;
   }
 
   .all-products__add-btn[aria-busy='true'] {
     opacity: 0.6;
     pointer-events: none;
+  }
+
+  .all-products__stockists {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .all-products__stockists {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: clamp(0.75rem, 3vw, 1.25rem) 0 0;
+      margin-top: clamp(0.5rem, 2vw, 1rem);
+      border-top: 1px solid rgba(232, 226, 210, 0.12);
+      color: rgba(232, 226, 210, 0.78);
+      font-family: var(--font-sans);
+      font-size: clamp(0.72rem, 1vw, 0.88rem);
+      line-height: 1.75;
+    }
+
+    .all-products__stockists-heading {
+      font-family: 'TTHoves', var(--font-sans), sans-serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #e8e2d2;
+      margin: 0 0 0.6rem;
+      font-weight: 400;
+    }
+
+    .all-products__stockists-list :where(p, li, span, div) {
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
+      letter-spacing: inherit;
+    }
+
+    .all-products__stockists-list p {
+      margin: 0 0 0.2em;
+    }
+
+    .all-products__stockists-list p:last-child {
+      margin-bottom: 0;
+    }
+
+    .all-products__stockists-list a {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-color: rgba(232, 226, 210, 0.3);
+      text-underline-offset: 0.18em;
+    }
+
+    .all-products__stockists-list a:hover {
+      text-decoration-color: rgba(232, 226, 210, 0.65);
+    }
   }
 
   @media (max-width: 749px) {
@@ -447,6 +549,7 @@
       min-height: calc(100dvh - 6rem);
       align-items: flex-start;
       justify-content: flex-start;
+      overflow: visible;
       padding: 1rem 1.1rem calc(1.25rem + var(--maw-mobile-nav-clearance, 4rem) + env(safe-area-inset-bottom, 0px));
       box-sizing: border-box;
     }
@@ -471,7 +574,9 @@
     }
 
     .all-products__card {
+      flex: none;
       width: 100%;
+      min-width: 0;
       max-width: 100%;
       height: auto;
       padding-inline: 0;
@@ -486,6 +591,7 @@
       column-gap: 0.55rem;
       row-gap: 0.65rem;
       align-items: start;
+      align-content: start;
     }
 
     .all-products__head-row {

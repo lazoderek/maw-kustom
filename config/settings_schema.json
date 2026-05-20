@@ -10,5 +10,27 @@
         "info": "Opaque color for mobile Safari/Android chrome and the navigation bar. Keep Navigation → Banner background on the same hex."
       }
     ]
+  },
+  {
+    "name": "Stockists",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shown on the product (collection) page only. Replaces the editorial copy in the nav banner on desktop, and renders at the bottom of the product list on mobile."
+      },
+      {
+        "type": "text",
+        "id": "stockists_heading",
+        "label": "Heading",
+        "default": "stockists"
+      },
+      {
+        "type": "richtext",
+        "id": "stockists",
+        "label": "Stockists",
+        "info": "One stockist per paragraph. Format as <p>Store Name — City, ST</p>. Use links to point to a store page if desired.",
+        "default": "<p><a href=\"https://www.instagram.com/forecast.space/\">forest.space</a> — Brooklyn, NY</p><p><a href=\"https://www.instagram.com/frequency.newyork/\">frequency.newyork</a> — New York, NY</p><p><a href=\"https://www.instagram.com/domicile.tokyo\">domicile.tokyo</a> — Shibuya, TKY</p>"
+      }
+    ]
   }
 ]

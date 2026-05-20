@@ -2,7 +2,7 @@
   Global navigation banner — sole site nav.
   Pinned just above the bottom of the viewport via flex layout in theme.liquid.
   Layout (left → right):
-    1. Wordmark + tiny copyright line
+    1. Wordmark
     2. Vertical list of nav links
     3. Wide editorial copy panel
     4. (Optional) cart / account icons (tablet/desktop; hidden on phone)
@@ -36,7 +36,7 @@
     --nav-mute: {{ section.settings.muted_color | default: '#7a6f5d' }};
   "
 >
-  <!-- Column 1 — Wordmark + copyright -->
+  <!-- Column 1 — Wordmark -->
   <div class="nav-banner__brand">
     <a href="{{ routes.root_url }}" class="nav-banner__wordmark-link" aria-label="{{ shop.name }}">
       {%- if section.settings.logo != blank -%}
@@ -50,9 +50,6 @@
         <span class="nav-banner__wordmark">{{ section.settings.wordmark | default: 'MAW' }}</span>
       {%- endif -%}
     </a>
-    <p class="nav-banner__copyright">
-      &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}{% if section.settings.legal_text != blank %} &nbsp;{{ section.settings.legal_text }}{% endif %}
-    </p>
   </div>
 
   {%- if mobile_logo_url != blank -%}
@@ -68,12 +65,36 @@
   {%- endif -%}
 
   <!-- Column 2 — Vertical nav links -->
+  {%- comment -%}
+    Render priority pages (info → studio → works) first in this exact order,
+    then any remaining menu links (e.g. the products / collection link) after.
+    Contact is hidden site-wide here; manage it via Shopify admin → Navigation if
+    you want it elsewhere.
+  {%- endcomment -%}
+  {%- assign nav_priority_handles = 'info,studio,works' | split: ',' -%}
   <ul class="nav-banner__links">
+    {%- for handle in nav_priority_handles -%}
+      {%- for link in section.settings.menu.links -%}
+        {%- assign nav_link_title_down = link.title | downcase | strip -%}
+        {%- if link.handle == handle or nav_link_title_down == handle -%}
+          <li>
+            <a
+              href="{{ link.url }}"
+              class="nav-banner__link"
+              {% if link.active %}aria-current="page"{% endif %}
+            >{{ link.title }}</a>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+
     {%- for link in section.settings.menu.links -%}
       {%- assign nav_link_title_down = link.title | downcase | strip -%}
-      {%- if link.handle == 'works' or nav_link_title_down == 'works' -%}
+      {%- if link.handle == 'contact' or nav_link_title_down == 'contact' -%}
         {%- continue -%}
       {%- endif -%}
+      {%- if nav_priority_handles contains link.handle -%}{%- continue -%}{%- endif -%}
+      {%- if nav_priority_handles contains nav_link_title_down -%}{%- continue -%}{%- endif -%}
       <li>
         <a
           href="{{ link.url }}"
@@ -93,8 +114,20 @@
     {% if cart.item_count == 0 %}hidden{% endif %}
   >{{ cart.item_count }}</a>
 
-  <!-- Column 3 — Editorial copy panel -->
-  {%- if section.settings.panel_text != blank -%}
+  <!-- Column 3 — Editorial copy panel (swapped for stockists list on the product/collection page) -->
+  {%- assign is_collection_template = false -%}
+  {%- if template.name == 'collection' -%}
+    {%- assign is_collection_template = true -%}
+  {%- endif -%}
+
+  {%- if is_collection_template and settings.stockists != blank -%}
+    <div class="nav-banner__panel nav-banner__panel--stockists">
+      {%- if settings.stockists_heading != blank -%}
+        <h2 class="nav-banner__panel-heading">{{ settings.stockists_heading }}</h2>
+      {%- endif -%}
+      <div class="nav-banner__panel-body">{{ settings.stockists }}</div>
+    </div>
+  {%- elsif section.settings.panel_text != blank -%}
     <div class="nav-banner__panel">{{ section.settings.panel_text }}</div>
   {%- endif -%}
 
@@ -173,8 +206,7 @@
   .nav-banner__brand {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 0.75rem;
+    justify-content: center;
   }
 
   .nav-banner__wordmark-link { display: inline-block; }
@@ -199,15 +231,6 @@
     width: auto;
     object-fit: contain;
     object-position: left center;
-  }
-
-  .nav-banner__copyright {
-    font-family: var(--font-sans);
-    font-size: 0.6em;
-    letter-spacing: 0.08em;
-    color: var(--nav-mute);
-    line-height: 1.4;
-    margin-top: auto;
   }
 
   /* ── Column 2 — Links ── */
@@ -259,6 +282,49 @@
 
   .nav-banner__panel p { margin: 0 0 0.5em; color: inherit; font-size: inherit; line-height: inherit; }
   .nav-banner__panel p:last-child { margin-bottom: 0; }
+
+  /* ── Stockists variant (collection page only) ── */
+  .nav-banner__panel--stockists {
+    column-count: 1;
+    max-width: 28ch;
+    color: var(--nav-fg);
+  }
+
+  .nav-banner__panel-heading {
+    font-family: 'TTHoves', var(--font-sans), sans-serif;
+    font-size: 0.62em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--nav-fg);
+    margin: 0 0 0.55em;
+    font-weight: 400;
+  }
+
+  .nav-banner__panel--stockists .nav-banner__panel-body :where(p, li, span, div) {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .nav-banner__panel--stockists .nav-banner__panel-body p {
+    margin: 0 0 0.18em;
+  }
+
+  .nav-banner__panel--stockists .nav-banner__panel-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .nav-banner__panel--stockists .nav-banner__panel-body a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(232, 226, 210, 0.25);
+    text-underline-offset: 0.18em;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .nav-banner__panel--stockists .nav-banner__panel-body a:hover {
+    text-decoration-color: rgba(232, 226, 210, 0.65);
+  }
 
   /* ── Column 4 — Actions ── */
   .nav-banner__actions {
@@ -318,8 +384,6 @@
       justify-content: space-between;
       gap: 1rem;
     }
-
-    .nav-banner__copyright { margin-top: 0; }
 
     .nav-banner__links {
       grid-column: 1 / -1;
@@ -383,7 +447,7 @@
       margin: 0;
     }
 
-    /* Hide logo / wordmark on small screens (copyright lives here too—omitted for a slimmer bar) */
+    /* Hide logo / wordmark on small screens for a slimmer bar */
     .nav-banner__brand {
       display: none;
     }
@@ -503,12 +567,6 @@
       "id": "mobile_logo",
       "label": "Mobile logo",
       "info": "Left of the menu links in the small-screen bar. If empty, theme looks for Files upload mobile-logo.png."
-    },
-    {
-      "type": "text",
-      "id": "legal_text",
-      "label": "Legal text (after copyright)",
-      "default": "All rights reserved."
     },
     {
       "type": "header",
