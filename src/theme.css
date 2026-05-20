@@ -56,7 +56,7 @@ html {
 /* Slightly smaller type scale on phones; nav keeps its own 16px em base (.nav-banner). */
 @media (max-width: 749px) {
   html {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   /*
@@ -113,6 +113,21 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+/* Collection (desktop): center product strip between top of window and nav */
+@media (min-width: 750px) {
+  body:has(.all-products) #MainContent.main--page-scroll {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Slight upward nudge vs true center (nav margin reads heavier below) */
+    padding-bottom: 2rem;
+  }
+
+  body:has(.all-products) .nav-banner {
+    margin-top: 0.75rem;
+  }
 }
 
 /*
@@ -187,6 +202,13 @@ p {
   line-height: 1.7;
   font-size: clamp(0.9rem, 1.1vw, 1.05rem);
   color: var(--color-ink-soft);
+}
+
+/* Collection cards: RTE <p> tags inherit card copy size (not global body p scale) */
+.all-products__description p {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 
 a {

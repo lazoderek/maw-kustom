@@ -110,22 +110,20 @@
 </section>
 
 <style>
-  /* Make the Shopify section wrapper fill #MainContent exactly */
   #shopify-section-{{ section.id }} {
-    height: 100%;
     display: flex;
     flex-direction: column;
   }
 
-  /* ── Horizontal scroll track (desktop): fixed card size, clip overflow — no vw scaling ── */
+  /* ── Horizontal scroll track (desktop): fixed card size, content height ── */
   .all-products__track {
     display: flex;
-    height: 100%;
+    height: auto;
     gap: 4rem;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    align-items: stretch;
+    align-items: flex-start;
     overscroll-behavior-x: contain;
     padding-inline: 1.25rem;
     box-sizing: border-box;
@@ -140,7 +138,7 @@
     flex: 0 0 620px;
     width: 620px;
     min-width: 620px;
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
     text-decoration: none;
@@ -156,16 +154,20 @@
   /* ── The Square Image Crop ── */
   .all-products {
     width: 100%;
-    height: calc(100vh - 6rem);
+    height: auto;
     padding: 3rem 3rem 0;
     box-sizing: border-box;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     overflow: hidden;
   }
 
   .all-products__frame {
-    flex: 1;
+    flex: 0 1 auto;
+    width: 100%;
     min-width: 0;
+    height: auto;
     overflow: hidden;
     position: relative;
   }
