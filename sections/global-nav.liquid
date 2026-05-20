@@ -230,23 +230,17 @@
     letter-spacing: 0.04em;
     color: var(--nav-fg);
     line-height: 1.7;
-    /* transition: color 0.2s ease, transform 0.25s ease; */
     text-transform: lowercase;
     display: inline-block;
     padding-inline: 0.3em;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .nav-banner__link:hover {
-    background-color: var(--nav-fg);
-    color: var(--nav-bg);
-    padding-inline: 0.3em;
+    transition: color 0.2s ease;
   }
 
   .nav-banner__link[aria-current="page"] {
-    background-color: var(--nav-fg);
-    color: var(--nav-bg);
-    padding-inline: 0.3em;
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgba(232, 226, 210, 0.65);
   }
 
   /* ── Column 3 — Editorial copy panel ── */
@@ -433,6 +427,10 @@
       padding: 0.35rem 0.45rem;
       margin: 0;
       box-sizing: border-box;
+    }
+
+    .nav-banner__link[aria-current="page"] {
+      text-underline-offset: 0.12em;
     }
 
     .nav-banner__cart-pill {
