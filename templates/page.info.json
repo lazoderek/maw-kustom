@@ -44,6 +44,9 @@
         "name": "makayla M★A★W wray",
         "tagline": "designer & maker",
         "bio": "<p>Based in New York City, Makayla Wray [ M A W ] is a designer and maker focused on textile design and high-level craftsmanship.<br/><br/>Each piece is produced to order in her studio, defined by a commitment to natural materials and precise construction. Her work is the result of a dedicated self-taught practice and a refined understanding of form and utility.<br/></p>",
+        "show_instagram": true,
+        "instagram_url": "https://www.instagram.com/moomoomaw/",
+        "instagram_label": "Instagram — @moomoomaw",
         "contact_label": "",
         "contact_url": "shopify://pages/info"
       }

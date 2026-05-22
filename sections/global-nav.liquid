@@ -127,7 +127,7 @@
       {%- endif -%}
       <div class="nav-banner__panel-body">{{ settings.stockists }}</div>
     </div>
-  {%- elsif section.settings.panel_text != blank -%}
+  {%- elsif section.settings.show_panel_text and section.settings.panel_text != blank -%}
     <div class="nav-banner__panel">{{ section.settings.panel_text }}</div>
   {%- endif -%}
 
@@ -587,6 +587,13 @@
       "id": "panel_text",
       "label": "Panel text",
       "default": "<p>Custom garments designed and sewn by hand from our studio. Made to order in small batches with intention, restraint, and a respect for the craft.</p><p>Each piece is built to outlast the season — repaired, re-loved, and worn for years.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_panel_text",
+      "label": "Show editorial panel",
+      "default": false,
+      "info": "Desktop nav column. Stockists still appear on the product collection page when configured in theme settings."
     },
     {
       "type": "header",

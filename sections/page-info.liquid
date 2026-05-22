@@ -67,6 +67,20 @@
           <div class="info-page__body">{{ section.settings.bio }}</div>
         {%- endif -%}
 
+        {%- if section.settings.show_instagram and section.settings.instagram_url != blank -%}
+          <div class="info-page__social">
+            <a
+              class="info-page__social-link"
+              href="{{ section.settings.instagram_url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ section.settings.instagram_label | default: 'Instagram' | escape }}"
+            >
+              {%- render 'icon-instagram' -%}
+            </a>
+          </div>
+        {%- endif -%}
+
         {%- if section.settings.contact_label != blank and section.settings.contact_url != blank -%}
           <a class="info-page__contact-link" href="{{ section.settings.contact_url }}">
             {{ section.settings.contact_label }}
@@ -255,6 +269,37 @@
     margin-bottom: 0;
   }
 
+  .info-page__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 1.1rem;
+  }
+
+  .info-page__social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(232, 226, 210, 0.55);
+    text-decoration: none;
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .info-page__social-link:hover {
+    color: rgba(232, 226, 210, 0.9);
+  }
+
+  .info-page__social-link svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  .info-page__social-link svg circle[fill] {
+    fill: currentColor;
+  }
+
   .info-page__contact-link {
     display: inline-block;
     margin-top: 0.5rem;
@@ -429,6 +474,32 @@
       "id": "bio",
       "label": "Bio / experience",
       "default": "<p>Based in [city], Makayla Wray is a self-taught designer and maker whose practice spans textile design, slow fashion, and wearable art.</p><p>Each piece is made to order from her studio, drawing on years of experience working with natural materials and an obsessive attention to construction.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Social"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_instagram",
+      "label": "Show Instagram icon",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "instagram_url",
+      "label": "Instagram URL",
+      "default": "https://www.instagram.com/moomoomaw/"
+    },
+    {
+      "type": "text",
+      "id": "instagram_label",
+      "label": "Instagram link label (accessibility)",
+      "default": "Instagram — @moomoomaw"
+    },
+    {
+      "type": "header",
+      "content": "Contact link"
     },
     {
       "type": "text",
