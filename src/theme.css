@@ -76,6 +76,16 @@ html {
   #MainContent {
     touch-action: pan-x pan-y;
   }
+
+  /* No long-press inspect/save menu on photos (iOS/Android) */
+  img,
+  picture,
+  video {
+    -webkit-touch-callout: none;
+    touch-callout: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
 }
 
 body {

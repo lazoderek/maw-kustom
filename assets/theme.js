@@ -17,6 +17,42 @@
   document.addEventListener('gestureend', blockPinch, { passive: false });
 })();
 
+// Mobile: block long-press / context menu on images (save, copy, inspect).
+(function () {
+  var mq = window.matchMedia('(max-width: 749px)');
+
+  function isProtectedImage(node) {
+    if (!node || !node.closest) return false;
+    if (node.tagName === 'IMG') return true;
+    if (node.tagName === 'VIDEO') return true;
+    return !!node.closest('picture, img, video');
+  }
+
+  function protectImages(root) {
+    if (!mq.matches) return;
+    (root || document).querySelectorAll('img').forEach(function (img) {
+      img.setAttribute('draggable', 'false');
+      img.decoding = img.decoding || 'async';
+    });
+  }
+
+  function blockIfImage(e) {
+    if (!mq.matches) return;
+    if (isProtectedImage(e.target)) e.preventDefault();
+  }
+
+  document.addEventListener('contextmenu', blockIfImage, true);
+  document.addEventListener('dragstart', blockIfImage, true);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    protectImages(document);
+  });
+
+  document.addEventListener('shopify:section:load', function (e) {
+    protectImages(e.target);
+  });
+})();
+
 // ── Alpine stores (registered before Alpine initialises the DOM) ───────────
 document.addEventListener('alpine:init', () => {
   Alpine.store('menu', {

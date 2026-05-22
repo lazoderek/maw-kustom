@@ -8,8 +8,13 @@
 
       {%- for product in collection.products -%}
         {%- assign product_is_first = forloop.first -%}
-        {%- comment -%} Frames frame-2 … frame-4 (n+1 offset vs gallery); cycles for longer collections. {%- endcomment -%}
-        {%- assign product_frame_i = forloop.index0 | modulo: 3 | plus: 2 -%}
+        {%- comment -%}
+          Cycle decorative frames in order. List every frame-*.png in /assets (pipe-separated).
+          Product n uses frame_assets[n % count] — repeats when there are more products than frames.
+        {%- endcomment -%}
+        {%- assign frame_assets = 'frame-1.png|frame-2.png|frame-3.png|frame-4.png' | split: '|' -%}
+        {%- assign frame_idx = forloop.index0 | modulo: frame_assets.size -%}
+        {%- assign frame_asset = frame_assets[frame_idx] -%}
         <div class="all-products__card" draggable="false" data-product-id="{{ product.id }}">
           
           <div class="all-products__img-wrapper">
@@ -26,7 +31,7 @@
 
             <img
               class="all-products__frame-img"
-              src="{{ 'frame-' | append: product_frame_i | append: '.png' | asset_url }}"
+              src="{{ frame_asset | asset_url }}"
               alt=""
               aria-hidden="true"
               loading="{% if product_is_first %}eager{% else %}lazy{% endif %}"
