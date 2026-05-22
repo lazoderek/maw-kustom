@@ -724,7 +724,7 @@
             quantity: 1,
             properties,
           });
-          window.location.href = '/cart';
+          window.MAW.navigate('/cart');
         } catch (e) {
           this.error = 'Something went wrong — please try again.';
           this.loading = false;

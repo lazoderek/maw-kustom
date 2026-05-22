@@ -320,9 +320,308 @@ window.MAWCart = {
   },
 };
 
+// ── Page transitions (swap #MainContent; bg + nav never reload) ─────────────
+const PAGE_TRANSITION_MS = 500;
+let navigationLock = false;
+
+function pageTransitionsEnabled() {
+  if (document.documentElement.classList.contains('shopify-design-mode')) return false;
+  if (!document.documentElement.classList.contains('page-transitions-enabled')) return false;
+  return true;
+}
+
+function setPageTransitionState(state) {
+  const html = document.documentElement;
+  html.classList.remove('page-is-entering', 'page-is-active', 'page-is-leaving');
+  if (state) html.classList.add(state);
+}
+
+function fadeInPage() {
+  if (!pageTransitionsEnabled()) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setPageTransitionState('page-is-active');
+    });
+  });
+}
+
+function fadeOutPage() {
+  if (!pageTransitionsEnabled()) return Promise.resolve();
+  setPageTransitionState('page-is-leaving');
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, PAGE_TRANSITION_MS);
+  });
+}
+
+function requiresFullReload(url) {
+  if (url.origin !== window.location.origin) return true;
+  const path = url.pathname;
+  if (path.startsWith('/checkout')) return true;
+  if (path.startsWith('/account/logout')) return true;
+  return false;
+}
+
+function isInternalNavUrl(url) {
+  if (requiresFullReload(url)) return false;
+  if (
+    url.pathname === window.location.pathname
+    && url.search === window.location.search
+    && url.hash
+  ) return false;
+  return true;
+}
+
+function isTransitionLink(anchor, event) {
+  if (!anchor || anchor.dataset.noTransition === 'true') return false;
+  if (anchor.target && anchor.target !== '_self') return false;
+  if (anchor.hasAttribute('download')) return false;
+  if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)) {
+    return false;
+  }
+
+  const href = anchor.getAttribute('href');
+  if (!href || href === '#') return false;
+  if (href.startsWith('#')) return false;
+  if (/^(mailto:|tel:|javascript:)/i.test(href)) return false;
+
+  try {
+    return isInternalNavUrl(new URL(anchor.href, window.location.href));
+  } catch {
+    return false;
+  }
+}
+
+async function fetchPage(url) {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    headers: {
+      Accept: 'text/html',
+      'X-Requested-With': 'MAW',
+    },
+  });
+  if (!response.ok) throw new Error(`Fetch failed (${response.status})`);
+
+  const html = await response.text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const main = doc.getElementById('MainContent');
+  if (!main) throw new Error('MainContent missing');
+
+  return {
+    title: doc.querySelector('title')?.textContent?.trim() || document.title,
+    mainNode: main,
+    doc,
+  };
+}
+
+function syncNavFromDocument(doc) {
+  const currentNav = document.querySelector('.nav-banner');
+  const fetchedNav = doc.querySelector('.nav-banner');
+  if (!currentNav || !fetchedNav) return;
+
+  currentNav.querySelectorAll('.nav-banner__link').forEach((link) => {
+    link.removeAttribute('aria-current');
+  });
+
+  const currentLinks = [...currentNav.querySelectorAll('.nav-banner__link')];
+  fetchedNav.querySelectorAll('.nav-banner__link[aria-current="page"]').forEach((fetchedLink) => {
+    const fetchedPath = new URL(fetchedLink.href).pathname.replace(/\/$/, '') || '/';
+    let matched = currentLinks.find((link) => {
+      const linkPath = new URL(link.href).pathname.replace(/\/$/, '') || '/';
+      return linkPath === fetchedPath;
+    });
+
+    if (!matched) {
+      const label = fetchedLink.textContent.trim().toLowerCase();
+      matched = currentLinks.find((link) => link.textContent.trim().toLowerCase() === label);
+    }
+
+    if (matched) matched.setAttribute('aria-current', 'page');
+  });
+
+  const panelSelector = '.nav-banner__panel, .nav-banner__panel--stockists';
+  const currentPanel = currentNav.querySelector(panelSelector);
+  const fetchedPanel = fetchedNav.querySelector(panelSelector);
+
+  if (fetchedPanel && currentPanel) {
+    currentPanel.replaceWith(document.importNode(fetchedPanel, true));
+  } else if (fetchedPanel && !currentPanel) {
+    const trailing = currentNav.querySelector('.nav-banner__trailing');
+    const imported = document.importNode(fetchedPanel, true);
+    if (trailing) trailing.before(imported);
+    else currentNav.appendChild(imported);
+  } else if (!fetchedPanel && currentPanel) {
+    currentPanel.remove();
+  }
+}
+
+function activateScripts(root) {
+  root.querySelectorAll('script').forEach((oldScript) => {
+    const script = document.createElement('script');
+    Array.from(oldScript.attributes).forEach((attr) => {
+      script.setAttribute(attr.name, attr.value);
+    });
+    script.textContent = oldScript.textContent;
+    oldScript.replaceWith(script);
+  });
+}
+
+function teardownMainContent(main) {
+  main.querySelectorAll('[data-maw-home-hero]').forEach((hero) => {
+    const pan = hero.querySelector('.home-hero__pan');
+    if (!pan) return;
+    const kick = pan._mawHeroPanKick;
+    const mq = window.matchMedia('(max-width: 749px)');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    unbindMediaChange(mq, kick);
+    unbindMediaChange(reduce, kick);
+    if (pan._mawHeroPanRaf != null) cancelAnimationFrame(pan._mawHeroPanRaf);
+    pan._mawHeroPanRaf = null;
+    pan._mawHeroPanKick = null;
+  });
+
+  ScrollTrigger.getAll().forEach((st) => {
+    const trigger = st.trigger;
+    if (trigger === main || (trigger instanceof Element && main.contains(trigger))) {
+      st.kill();
+    }
+  });
+}
+
+function bootSwappedPage(scope) {
+  ScrollTrigger.refresh();
+  initReveal(scope);
+  initScrapbookScroll(scope);
+  initParallax(scope);
+  initMarquee(scope);
+  initHomeHeroPan(scope);
+  updateCartCount();
+}
+
+function applyPageSwap(page, url, { historyMode = 'push' } = {}) {
+  const currentMain = document.getElementById('MainContent');
+  if (!currentMain) throw new Error('MainContent missing');
+
+  teardownMainContent(currentMain);
+
+  const newMain = document.importNode(page.mainNode, true);
+  currentMain.replaceWith(newMain);
+  activateScripts(newMain);
+
+  if (page.title) document.title = page.title;
+
+  if (page.doc) syncNavFromDocument(page.doc);
+
+  if (historyMode === 'push') {
+    history.pushState({ mawSwap: true }, '', url);
+  } else if (historyMode === 'replace') {
+    history.replaceState({ mawSwap: true }, '', url);
+  }
+
+  newMain.scrollTop = 0;
+
+  if (typeof Alpine !== 'undefined') {
+    Alpine.initTree(newMain);
+  }
+
+  bootSwappedPage(newMain);
+  newMain.focus({ preventScroll: true });
+}
+
+async function navigateWithTransition(url) {
+  const target = new URL(url, window.location.href);
+
+  if (!pageTransitionsEnabled() || requiresFullReload(target)) {
+    window.location.assign(target.href);
+    return;
+  }
+
+  if (navigationLock) return;
+  navigationLock = true;
+
+  try {
+    const [, page] = await Promise.all([
+      fadeOutPage(),
+      fetchPage(target.href),
+    ]);
+    applyPageSwap(page, target.href);
+    fadeInPage();
+  } catch {
+    window.location.assign(target.href);
+  } finally {
+    navigationLock = false;
+  }
+}
+
+function initPageTransitions() {
+  if (!pageTransitionsEnabled()) return;
+
+  history.replaceState({ mawSwap: true }, '', window.location.href);
+  fadeInPage();
+
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    setPageTransitionState('page-is-entering');
+    fadeInPage();
+  });
+
+  window.addEventListener('popstate', async () => {
+    if (!pageTransitionsEnabled() || navigationLock) return;
+
+    navigationLock = true;
+
+    try {
+      const [, page] = await Promise.all([
+        fadeOutPage(),
+        fetchPage(window.location.href),
+      ]);
+      applyPageSwap(page, window.location.href, { historyMode: 'none' });
+      fadeInPage();
+    } catch {
+      window.location.reload();
+    } finally {
+      navigationLock = false;
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href]');
+    if (!isTransitionLink(link, event)) return;
+    event.preventDefault();
+    navigateWithTransition(link.href);
+  });
+
+  document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!form || form.tagName !== 'FORM') return;
+    if (form.dataset.noTransition === 'true') return;
+    if (event.defaultPrevented) return;
+    if ((form.method || 'get').toLowerCase() !== 'get') return;
+
+    const action = form.getAttribute('action') || window.location.href;
+    let url;
+    try {
+      url = new URL(action, window.location.href);
+    } catch {
+      return;
+    }
+    if (!isInternalNavUrl(url)) return;
+
+    event.preventDefault();
+    const data = new FormData(form);
+    url.search = new URLSearchParams(data).toString();
+    navigateWithTransition(url.href);
+  });
+}
+
+window.MAW = window.MAW || {};
+window.MAW.navigate = navigateWithTransition;
+window.MAW.refresh = () => navigateWithTransition(window.location.href);
+
 // ── Boot ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   gsap.registerPlugin(ScrollTrigger);
+
+  initPageTransitions();
 
   initReveal();
   initScrapbookScroll();

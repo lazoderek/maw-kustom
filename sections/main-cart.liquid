@@ -406,7 +406,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: key, quantity: 0 }),
     });
-    window.location.reload();
+    window.MAW.refresh();
   }
 
   async function updateQty(key, qty) {
@@ -416,7 +416,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: key, quantity: qty }),
     });
-    window.location.reload();
+    window.MAW.refresh();
   }
 </script>
 

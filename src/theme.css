@@ -21,6 +21,26 @@
   /* ── Transitions ── */
   --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --page-transition-duration: 0.5s;
+  --maw-bg-image: url("https://cdn.shopify.com/s/files/1/0677/4472/7331/files/bg.png?v=1776670229");
+}
+
+/* Cross-document transitions: browser cross-fades #MainContent; bg + nav stay put (Chrome 126+). */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(maw-main),
+::view-transition-new(maw-main) {
+  animation-duration: var(--page-transition-duration);
+  animation-timing-function: var(--ease-smooth);
+}
+
+::view-transition-old(maw-bg),
+::view-transition-new(maw-bg),
+::view-transition-old(maw-nav),
+::view-transition-new(maw-nav) {
+  animation: none;
 }
 
 /* ── Base resets ── */
@@ -51,6 +71,7 @@ html {
   height: 100%;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background-color: var(--color-cream);
 }
 
 /* Slightly smaller type scale on phones; nav keeps its own 16px em base (.nav-banner). */
@@ -95,19 +116,48 @@ body {
   touch-action: manipulation;
   overscroll-behavior: none;
   background-color: var(--color-cream);
-  /* */
-  background-image: url("https://cdn.shopify.com/s/files/1/0677/4472/7331/files/bg.png?v=1776670229");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  /* */
   color: var(--color-ink);
   /* Full-viewport flex column: content window on top, nav bar pinned to bottom */
   display: flex;
   flex-direction: column;
   height: 100dvh;
   overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fixed texture layer — never fades; critical CSS in theme.liquid paints this before theme.css loads. */
+.maw-page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--color-cream);
+  background-image: var(--maw-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  view-transition-name: maw-bg;
+}
+
+/* ── Page transition (main content only; background + nav stay put) ── */
+html.page-transitions-enabled #MainContent {
+  view-transition-name: maw-main;
+  transition: opacity var(--page-transition-duration) var(--ease-smooth);
+}
+
+html.page-transitions-enabled.page-is-entering #MainContent,
+html.page-transitions-enabled.page-is-leaving #MainContent {
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.page-transitions-enabled.page-is-active #MainContent {
+  opacity: 1;
+}
+
+html.page-transitions-enabled .nav-banner-stack {
+  view-transition-name: maw-nav;
 }
 
 /* ── Scrollable content window ── */
@@ -116,6 +166,7 @@ body {
   min-height: 0; /* required for flex overflow to work */
   overflow: hidden;
   position: relative;
+  z-index: 1;
 }
 
 /* Long editorial pages: scroll here so sections stay simple (#MainContent overflow stays hidden otherwise). */

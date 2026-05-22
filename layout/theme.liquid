@@ -5,6 +5,41 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   {%- assign _chrome = settings.browser_chrome_color | default: '#271f16' -%}
+  {%- assign _bg_url = 'https://cdn.shopify.com/s/files/1/0677/4472/7331/files/bg.png?v=1776670229' -%}
+  {%- comment -%} Static bg + hide main before CSS/JS load (prevents white flash between pages). {%- endcomment -%}
+  <link rel="preload" as="image" href="{{ _bg_url }}">
+  <style id="maw-critical">
+    html,
+    body {
+      background-color: #FAF8F4;
+    }
+    .maw-page-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-color: #FAF8F4;
+      background-image: url("{{ _bg_url }}");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    html.page-transitions-enabled.page-is-entering #MainContent {
+      opacity: 0;
+    }
+    html {
+      background-color: #FAF8F4;
+    }
+  </style>
+  <script>
+    (function () {
+      if (typeof Shopify !== 'undefined' && Shopify.designMode) return;
+      try {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      } catch (e) {}
+      document.documentElement.classList.add('page-transitions-enabled', 'page-is-entering');
+    })();
+  </script>
   {%- comment -%} Android Chrome, older Safari; Safari 26+ mostly samples fixed strips (see theme.css). {%- endcomment -%}
   <meta name="theme-color" content="{{ _chrome }}" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="{{ _chrome }}" media="(prefers-color-scheme: dark)">
@@ -71,6 +106,8 @@
 </head>
 
 <body x-data class="no-js:hidden">
+
+  <div class="maw-page-bg" aria-hidden="true"></div>
 
   {%- comment -%} Safari 26+: fixed strips (top + bottom) — meta theme-color is ignored. {%- endcomment -%}
   <div class="safari-chrome-tint safari-chrome-tint--top" aria-hidden="true"></div>
