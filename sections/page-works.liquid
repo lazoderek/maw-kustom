@@ -1,0 +1,589 @@
+{% comment %}
+  Works — portfolio strip matching the products page: horizontal scroll on desktop,
+  vertical stack on mobile. Frames cycle backwards (5 → 4 → 3 …).
+{% endcomment %}
+
+<section class="works-page" data-section-id="{{ section.id }}">
+  <div class="works-page__frame" id="works-page-frame">
+    <div class="works-page__track" id="works-page-track">
+
+      {%- assign frame_assets = 'frame-1.png|frame-2.png|frame-3.png|frame-4.png|frame-5.png' | split: '|' -%}
+      {%- assign frame_count = frame_assets.size -%}
+      {%- assign image_slot_ids = 'image_1,image_2,image_3,image_4,image_5,image_6' | split: ',' -%}
+
+      {%- for block in section.blocks -%}
+        {%- if block.type != 'project' -%}
+          {%- continue -%}
+        {%- endif -%}
+
+        {%- assign project_is_first = forloop.first -%}
+        {%- assign rev = forloop.index0 | modulo: frame_count -%}
+        {%- assign frame_idx = frame_count | minus: 1 | minus: rev -%}
+        {%- assign frame_asset = frame_assets[frame_idx] -%}
+
+        {%- assign slide_count = 0 -%}
+        {%- for slot_id in image_slot_ids -%}
+          {%- assign slide_image = block.settings[slot_id] -%}
+          {%- if slide_image != blank -%}
+            {%- assign slide_count = slide_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        <div class="works-page__card" draggable="false" {{ block.shopify_attributes }}>
+          <div class="works-page__img-wrapper">
+            {%- assign slide_index = 0 -%}
+            {%- for slot_id in image_slot_ids -%}
+              {%- assign slide_image = block.settings[slot_id] -%}
+              {%- if slide_image != blank -%}
+                <img
+                  class="works-page__img{% if slide_index == 0 %} is-active{% endif %}"
+                  src="{{ slide_image | image_url: width: 1200 }}"
+                  alt="{{ slide_image.alt | default: block.settings.title | escape }}"
+                  loading="{% if project_is_first and slide_index == 0 %}eager{% else %}lazy{% endif %}"
+                  width="{{ slide_image.width }}"
+                  height="{{ slide_image.height }}"
+                >
+                {%- assign slide_index = slide_index | plus: 1 -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- if slide_count == 0 -%}
+              <div class="works-page__placeholder"></div>
+            {%- endif -%}
+
+            <img
+              class="works-page__frame-img"
+              src="{{ frame_asset | asset_url }}"
+              alt=""
+              aria-hidden="true"
+              loading="{% if project_is_first %}eager{% else %}lazy{% endif %}"
+            >
+
+            {%- if slide_count > 1 -%}
+              <button class="works-page__arrow works-page__arrow--prev" type="button" aria-label="Previous image" data-arrow="prev" hidden>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11L5 7l4-4"/></svg>
+              </button>
+              <button class="works-page__arrow works-page__arrow--next" type="button" aria-label="Next image" data-arrow="next">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l4 4-4 4"/></svg>
+              </button>
+            {%- endif -%}
+          </div>
+
+          <div class="works-page__info">
+            {%- if block.settings.title != blank -%}
+              <h2 class="works-page__title">{{ block.settings.title }}</h2>
+            {%- endif -%}
+
+            {%- if block.settings.description != blank -%}
+              <div class="works-page__description">{{ block.settings.description }}</div>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+
+      {%- assign project_count = 0 -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'project' -%}
+          {%- assign project_count = project_count | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- if project_count == 0 -%}
+        <div class="works-page__empty">
+          <p>Add project blocks in the theme editor to showcase your work.</p>
+        </div>
+      {%- endif -%}
+
+    </div>
+  </div>
+</section>
+
+<style>
+  #shopify-section-{{ section.id }} {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .works-page__track {
+    display: flex;
+    height: auto;
+    gap: 4rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    align-items: flex-start;
+    overscroll-behavior-x: contain;
+    padding-inline: 1.25rem;
+    box-sizing: border-box;
+  }
+
+  .works-page__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .works-page__card {
+    flex: 0 0 620px;
+    width: 620px;
+    min-width: 620px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    padding: 0 1.75rem;
+    box-sizing: border-box;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .works-page {
+    width: 100%;
+    height: auto;
+    padding: 3rem 3rem 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: hidden;
+  }
+
+  .works-page__frame {
+    flex: 0 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .works-page__frame.is-dragging {
+    cursor: grabbing;
+  }
+
+  .works-page__frame.is-dragging .works-page__track {
+    cursor: grabbing;
+  }
+
+  .works-page__img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+    overflow: visible;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .works-page__placeholder {
+    position: absolute;
+    inset: 0;
+    background: rgba(232, 226, 210, 0.06);
+    border-radius: 4px;
+  }
+
+  .works-page__img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .works-page__img.is-active {
+    opacity: 1;
+  }
+
+  .works-page__frame-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 5;
+    display: block;
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+
+  .works-page__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(13, 10, 7, 0.6);
+    border: 1px solid rgba(232, 226, 210, 0.18);
+    color: #e8e2d2;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    z-index: 6;
+    padding: 0;
+  }
+
+  .works-page__img-wrapper:hover .works-page__arrow:not([hidden]) {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .works-page__img-wrapper .works-page__arrow:not([hidden]) {
+      opacity: 0.88;
+    }
+  }
+
+  .works-page__arrow:hover {
+    background: rgba(13, 10, 7, 0.88);
+  }
+
+  .works-page__arrow--prev { left: 0.6rem; }
+  .works-page__arrow--next { right: 0.6rem; }
+
+  .works-page__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0 0.15rem;
+    min-width: 0;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .works-page__title {
+    font-family: 'TTHoves', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 400;
+    color: #e8e2d2;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+
+  .works-page__description {
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: rgba(232, 226, 210, 0.92);
+    margin: 0;
+    min-width: 0;
+  }
+
+  .works-page__description :where(p, li, span, div, blockquote) {
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+  }
+
+  .works-page__description p {
+    margin: 0 0 0.65em;
+  }
+
+  .works-page__description p:last-child {
+    margin-bottom: 0;
+  }
+
+  .works-page__description a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(232, 226, 210, 0.35);
+    text-underline-offset: 0.18em;
+  }
+
+  .works-page__description a:hover {
+    text-decoration-color: rgba(232, 226, 210, 0.65);
+  }
+
+  .works-page__empty {
+    flex: 0 0 auto;
+    padding: 2rem 1rem;
+    color: rgba(232, 226, 210, 0.65);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 749px) {
+    #shopify-section-{{ section.id }} {
+      height: auto;
+      min-height: 0;
+    }
+
+    .works-page {
+      height: auto;
+      min-height: calc(100dvh - 6rem);
+      align-items: flex-start;
+      justify-content: flex-start;
+      overflow: visible;
+      padding: 1rem 1.1rem calc(1.25rem + var(--maw-mobile-nav-clearance, 4rem) + env(safe-area-inset-bottom, 0px));
+      box-sizing: border-box;
+    }
+
+    .works-page__frame {
+      flex: none;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .works-page__track {
+      flex-direction: column;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      gap: clamp(1.75rem, 5vw, 2.75rem);
+      overflow-x: hidden;
+      overflow-y: visible;
+      padding-inline: 0;
+      align-items: stretch;
+    }
+
+    .works-page__card {
+      flex: none;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      height: auto;
+      padding-inline: 0;
+    }
+
+    .works-page__img {
+      top: 6%;
+      left: 6%;
+      width: 88%;
+      height: 88%;
+    }
+
+    .works-page__placeholder {
+      inset: auto;
+      top: 6%;
+      left: 6%;
+      width: 88%;
+      height: 88%;
+    }
+
+    .works-page__frame-img {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+
+    .works-page__arrow {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    const frame = document.getElementById('works-page-frame');
+    const track = document.getElementById('works-page-track');
+    if (!frame || !track) return;
+
+    const mqDesktop = window.matchMedia('(min-width: 750px)');
+    const swipeMQ = window.matchMedia('(max-width: 749px)');
+    const SWIPE_MIN = 45;
+
+    let isDragging = false;
+    let startX = 0;
+    let scrollStart = 0;
+    const DRAG_THRESHOLD = 6;
+
+    frame.addEventListener('mousedown', (e) => {
+      if (!mqDesktop.matches) return;
+      if (e.target.closest('button, a[href], input, textarea, select, label')) return;
+      isDragging = true;
+      startX = e.pageX;
+      scrollStart = track.scrollLeft;
+      track.style.scrollBehavior = 'auto';
+      frame.classList.add('is-dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging || !mqDesktop.matches) return;
+      track.scrollLeft = scrollStart + (startX - e.pageX);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      frame.classList.remove('is-dragging');
+      track.style.scrollBehavior = 'smooth';
+    });
+
+    let touchStartX = 0;
+    let touchScrollStart = 0;
+
+    track.addEventListener('touchstart', (e) => {
+      if (!mqDesktop.matches) return;
+      if (e.target.closest('button, a[href], input, textarea, select, label')) return;
+      touchStartX = e.touches[0].pageX;
+      touchScrollStart = track.scrollLeft;
+      track.style.scrollBehavior = 'auto';
+    }, { passive: true });
+
+    track.addEventListener('touchmove', (e) => {
+      if (!mqDesktop.matches) return;
+      track.scrollLeft = touchScrollStart + (touchStartX - e.touches[0].pageX);
+    }, { passive: true });
+
+    track.addEventListener('touchend', () => {
+      if (!mqDesktop.matches) return;
+      track.style.scrollBehavior = 'smooth';
+    });
+
+    track.querySelectorAll('.works-page__img-wrapper').forEach((wrapper) => {
+      const imgs = wrapper.querySelectorAll('.works-page__img');
+      const prevBtn = wrapper.querySelector('[data-arrow="prev"]');
+      const nextBtn = wrapper.querySelector('[data-arrow="next"]');
+      if (imgs.length <= 1) return;
+
+      let current = 0;
+
+      function goTo(index) {
+        imgs[current].classList.remove('is-active');
+        current = index;
+        imgs[current].classList.add('is-active');
+        if (prevBtn) prevBtn.hidden = current === 0;
+        if (nextBtn) nextBtn.hidden = current === imgs.length - 1;
+      }
+
+      function goPrev() {
+        if (current > 0) goTo(current - 1);
+      }
+
+      function goNext() {
+        if (current < imgs.length - 1) goTo(current + 1);
+      }
+
+      prevBtn && prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        goPrev();
+      });
+
+      nextBtn && nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        goNext();
+      });
+
+      let swipeTracking = false;
+      let swipeStartX = 0;
+      let swipeStartY = 0;
+
+      wrapper.addEventListener('touchstart', (e) => {
+        if (!swipeMQ.matches || e.touches.length !== 1) return;
+        swipeTracking = true;
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      wrapper.addEventListener('touchmove', (e) => {
+        if (!swipeTracking || !swipeMQ.matches) return;
+        const dx = e.touches[0].clientX - swipeStartX;
+        const dy = e.touches[0].clientY - swipeStartY;
+        if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 12) swipeTracking = false;
+      }, { passive: true });
+
+      wrapper.addEventListener('touchend', (e) => {
+        if (!swipeTracking || !swipeMQ.matches) {
+          swipeTracking = false;
+          return;
+        }
+        swipeTracking = false;
+        const dx = e.changedTouches[0].clientX - swipeStartX;
+        const dy = e.changedTouches[0].clientY - swipeStartY;
+        if (Math.abs(dx) < SWIPE_MIN || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx > 0) goPrev();
+        else goNext();
+      }, { passive: true });
+
+      wrapper.addEventListener('touchcancel', () => {
+        swipeTracking = false;
+      }, { passive: true });
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Works",
+  "max_blocks": 24,
+  "settings": [],
+  "blocks": [
+    {
+      "type": "project",
+      "name": "Project",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Project title"
+        },
+        {
+          "type": "richtext",
+          "id": "description",
+          "label": "Description",
+          "default": "<p>Describe the project — materials, process, and context.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_1",
+          "label": "Image 1"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "Image 2"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_3",
+          "label": "Image 3"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_4",
+          "label": "Image 4"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_5",
+          "label": "Image 5"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_6",
+          "label": "Image 6"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Works",
+      "blocks": [
+        {
+          "type": "project",
+          "settings": {
+            "title": "Project one",
+            "description": "<p>First portfolio piece.</p>"
+          }
+        },
+        {
+          "type": "project",
+          "settings": {
+            "title": "Project two",
+            "description": "<p>Second portfolio piece.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

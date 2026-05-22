@@ -1,8 +1,55 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
-      "type": "main-page",
-      "disabled": true,
+      "type": "page-works",
+      "blocks": {
+        "project_1": {
+          "type": "project",
+          "settings": {
+            "title": "Leather Wardrobe for Kendrick Lamar, The GNX Tour, 2025",
+            "description": "<p>Concept, fabrication, and execution of a custom leather wardrobe designed exclusively for Kendrick Lamar’s Grand National / GNX Tour.</p>",
+            "image_1": "shopify://shop_images/fd0099fc4a96af1562f4afe3f070429da1d71d8d-1980x35202.avif",
+            "image_2": "shopify://shop_images/deb5f865f75d06d758648eac8abdf18d3686be73-1080x1350.avif",
+            "image_3": "shopify://shop_images/abecb71af33f5e4a44024791251d08de95567488-1080x13502.avif"
+          }
+        },
+        "project_2": {
+          "type": "project",
+          "settings": {
+            "title": "MAW × rvdimir, 2023",
+            "description": "<p>A collaborative collection merging digital sculpture with raw craftsmanship. Features hand-worked leather integrated with custom silver hardware.</p>",
+            "image_1": "shopify://shop_images/c321d80dd740c32d23ff83f02e3026989691c27d-3840x48202.avif",
+            "image_2": "shopify://shop_images/835c03841dd1338fa7ab25650c378e26347a7c8b-2715x40722.avif",
+            "image_3": "shopify://shop_images/44c330d085353b684226c0d3a5d9463d6158e12e-3202x41342.avif",
+            "image_4": "shopify://shop_images/c6bf4fa0da78aef9b2bf051d789db031da57a01a-1144x17192.avif"
+          }
+        },
+        "project_yTMXVD": {
+          "type": "project",
+          "settings": {
+            "title": "Happy99 Isotope Bag, 2021",
+            "description": "<p>Lambskin Bag for Happy99</p>",
+            "image_1": "shopify://shop_images/1e20055ab4c30aaee0ff8d8cd4e72f003696a0fd-1080x13502.avif",
+            "image_2": "shopify://shop_images/f15e13cc551cc4421bc1f69ca77148ae2f77f357-1649x1649.avif",
+            "image_3": "shopify://shop_images/93cb6db35eeda45149a585c1eed6310faceaa889-1649x1649.avif",
+            "image_4": "shopify://shop_images/21b803d9b97945befba284f62363353be2540917-1649x1649.avif"
+          }
+        }
+      },
+      "block_order": [
+        "project_1",
+        "project_2",
+        "project_yTMXVD"
+      ],
       "settings": {}
     }
   },

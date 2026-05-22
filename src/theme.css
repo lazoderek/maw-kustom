@@ -125,9 +125,10 @@ body {
   overscroll-behavior: contain;
 }
 
-/* Collection (desktop): center product strip between top of window and nav */
+/* Collection + works (desktop): center strip between top of window and nav */
 @media (min-width: 750px) {
-  body:has(.all-products) #MainContent.main--page-scroll {
+  body:has(.all-products) #MainContent.main--page-scroll,
+  body:has(.works-page) #MainContent.main--page-scroll {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -135,7 +136,8 @@ body {
     padding-bottom: 2rem;
   }
 
-  body:has(.all-products) .nav-banner {
+  body:has(.all-products) .nav-banner,
+  body:has(.works-page) .nav-banner {
     margin-top: 0.75rem;
   }
 }
@@ -214,8 +216,9 @@ p {
   color: var(--color-ink-soft);
 }
 
-/* Collection cards: RTE <p> tags inherit card copy size (not global body p scale) */
-.all-products__description p {
+/* Collection + works cards: RTE <p> tags inherit card copy size (not global body p scale) */
+.all-products__description p,
+.works-page__description p {
   font-size: inherit;
   line-height: inherit;
   color: inherit;
