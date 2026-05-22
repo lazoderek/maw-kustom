@@ -79,7 +79,7 @@
   <a class="skip-link" href="#MainContent">Skip to content</a>
 
   <!-- Scrollable content window (info/studio/collection mobile-style pages: scroll on main, not nested section scroll) -->
-  <main id="MainContent" class="{% if template.suffix == 'info' or template.suffix == 'studio' or template.suffix == 'works' or template.name == 'collection' %}main--page-scroll{% endif %}" role="main" tabindex="-1">
+  <main id="MainContent" class="{% if template.suffix == 'info' or template.suffix == 'studio' or template.suffix == 'works' or template.name == 'collection' or template.name == 'cart' %}main--page-scroll{% endif %}" role="main" tabindex="-1">
     {{ content_for_layout }}
   </main>
 

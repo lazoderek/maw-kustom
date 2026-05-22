@@ -5,9 +5,11 @@
     1. Wordmark
     2. Vertical list of nav links
     3. Wide editorial copy panel
-    4. (Optional) cart / account icons (tablet/desktop; hidden on phone)
+    4. Cart count pill (when items in cart) + optional account icon (desktop/tablet)
   Phone (≤749px): CSS grid 1fr / auto / 1fr — mobile logo (start), links (center),
-    rounded cart count pill (end). Pill is hidden when the cart is empty.
+    rounded cart count pill (end).
+  Desktop (≥750px): same cart count pill in the nav banner’s trailing column (end).
+  Pill is hidden when the cart is empty on all breakpoints.
 {% endcomment %}
 
 {%- liquid
@@ -105,14 +107,25 @@
     {%- endfor -%}
   </ul>
 
-  <!-- Mobile-only: cart count pill (hidden when empty; theme.js updateCartCount) -->
-  <a
-    href="{{ routes.cart_url }}"
-    class="nav-banner__cart-pill"
-    data-cart-count
-    aria-label="{% if cart.item_count > 0 -%}Cart, {{ cart.item_count }} {%- if cart.item_count == 1 -%}item{%- else -%}items{%- endif -%}{%- else -%}Cart{%- endif -%}"
-    {% if cart.item_count == 0 %}hidden{% endif %}
-  >{{ cart.item_count }}</a>
+  <!-- Trailing: cart pill (+ optional account on desktop) -->
+  <div class="nav-banner__trailing">
+    <a
+      href="{{ routes.cart_url }}"
+      class="nav-banner__cart-pill"
+      data-cart-pill
+      aria-label="{% if cart.item_count > 0 -%}Cart, {{ cart.item_count }} {%- if cart.item_count == 1 -%}item{%- else -%}items{%- endif -%}{%- else -%}Cart{%- endif -%}"
+      {% if cart.item_count == 0 %}hidden{% endif %}
+    >
+      <span class="nav-banner__cart-pill-mobile">{{ cart.item_count }}</span>
+      <span class="nav-banner__cart-pill-desktop">Items | {{ cart.item_count }}</span>
+    </a>
+
+    {%- if section.settings.show_actions -%}
+      <a href="{{ routes.account_url }}" class="nav-banner__action" aria-label="Account">
+        {%- render 'icon-account' -%}
+      </a>
+    {%- endif -%}
+  </div>
 
   <!-- Column 3 — Editorial copy panel (swapped for stockists list on the product/collection page) -->
   {%- assign is_collection_template = false -%}
@@ -131,18 +144,6 @@
     <div class="nav-banner__panel">{{ section.settings.panel_text }}</div>
   {%- endif -%}
 
-  <!-- Column 4 — Account / cart -->
-  {%- if section.settings.show_actions -%}
-    <div class="nav-banner__actions">
-      <a href="{{ routes.cart_url }}" class="nav-banner__action" aria-label="Cart">
-        {%- render 'icon-bag' -%}
-        <span data-cart-count hidden>0</span>
-      </a>
-      <a href="{{ routes.account_url }}" class="nav-banner__action" aria-label="Account">
-        {%- render 'icon-account' -%}
-      </a>
-    </div>
-  {%- endif -%}
 </nav>
 </div>
 
@@ -197,9 +198,85 @@
     object-position: left center;
   }
 
-  /* Mobile-only cart (desktop / tablet use optional icon actions) */
+  /* Cart count pill — shared styling; placement per breakpoint below */
   .nav-banner__cart-pill {
     display: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 1.75rem;
+    padding: 0.28rem 0.5rem;
+    border-radius: 0.375rem;
+    font-family: 'TTHoves', var(--font-sans), sans-serif;
+    font-size: 0.72em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--nav-fg);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .nav-banner__cart-pill[hidden] {
+    display: none !important;
+  }
+
+  .nav-banner__cart-pill:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: var(--nav-fg);
+  }
+
+  .nav-banner__cart-pill:focus-visible {
+    outline: 2px solid var(--nav-fg);
+    outline-offset: 2px;
+  }
+
+  .nav-banner__cart-pill-desktop {
+    display: none;
+  }
+
+  /* Desktop / tablet: trailing cluster in the nav banner’s last column */
+  .nav-banner__trailing {
+    display: contents;
+  }
+
+  @media (min-width: 750px) {
+    .nav-banner__trailing {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      grid-column: 4;
+      grid-row: 1;
+      justify-self: end;
+      align-self: center;
+    }
+
+    .nav-banner__trailing:not(:has(.nav-banner__cart-pill:not([hidden]))):not(:has(.nav-banner__action)) {
+      display: none;
+    }
+
+    .nav-banner__cart-pill:not([hidden]) {
+      display: inline-flex;
+      min-width: auto;
+      padding: 0.38rem 0.75rem;
+      font-size: 0.82em;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-banner__cart-pill-mobile {
+      display: none;
+    }
+
+    .nav-banner__cart-pill-desktop {
+      display: inline;
+    }
+  }
+
+  @media (min-width: 750px) and (max-width: 900px) {
+    .nav-banner__trailing {
+      grid-column: 2;
+    }
   }
 
   /* ── Column 1 — Brand ── */
@@ -326,14 +403,7 @@
     text-decoration-color: rgba(232, 226, 210, 0.65);
   }
 
-  /* ── Column 4 — Actions ── */
-  .nav-banner__actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    align-self: center;
-  }
-
+  /* ── Trailing cluster (cart pill + optional account) ── */
   .nav-banner__action {
     position: relative;
     display: flex;
@@ -349,22 +419,6 @@
     height: 18px;
     stroke: currentColor;
     fill: none;
-  }
-
-  .nav-banner__action [data-cart-count] {
-    position: absolute;
-    top: -6px;
-    right: -8px;
-    background: var(--nav-fg);
-    color: var(--nav-bg);
-    font-size: 0.55em;
-    font-weight: 600;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   /* ── Responsive ── */
@@ -398,11 +452,6 @@
     }
 
     .nav-banner__panel { display: none; }
-
-    .nav-banner__actions {
-      grid-column: 2;
-      grid-row: 1;
-    }
   }
 
   /* ── Fixed phone bar: logo + links as a centered cluster ── */
@@ -497,45 +546,19 @@
       text-underline-offset: 0.12em;
     }
 
-    .nav-banner__cart-pill {
+    .nav-banner__trailing {
+      display: contents;
+    }
+
+    .nav-banner__cart-pill:not([hidden]) {
+      display: inline-flex;
       grid-column: 3;
       grid-row: 1;
       justify-self: end;
       align-self: center;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      min-width: 1.75rem;
-      padding: 0.28rem 0.5rem;
-      border-radius: 0.375rem;
-      font-family: 'TTHoves', var(--font-sans), sans-serif;
-      font-size: 0.72em;
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-      color: var(--nav-fg);
-      text-decoration: none;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    .nav-banner__cart-pill[hidden] {
-      display: none !important;
-    }
-
-    .nav-banner__cart-pill:hover {
-      background: rgba(255, 255, 255, 0.22);
-      color: var(--nav-fg);
-    }
-
-    .nav-banner__cart-pill:focus-visible {
-      outline: 2px solid var(--nav-fg);
-      outline-offset: 2px;
-    }
-
-    /* Icon row is for tablet/desktop only */
-    .nav-banner__actions {
+    .nav-banner__trailing .nav-banner__action {
       display: none;
     }
   }
@@ -624,8 +647,9 @@
     {
       "type": "checkbox",
       "id": "show_actions",
-      "label": "Show cart & account icons",
-      "default": false
+      "label": "Show account icon (desktop)",
+      "default": false,
+      "info": "Cart count pill appears automatically when the cart has items."
     }
   ]
 }

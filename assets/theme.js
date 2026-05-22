@@ -280,18 +280,27 @@ function updateCartCount() {
   fetch('/cart.js')
     .then((r) => r.json())
     .then((cart) => {
+      const count = cart.item_count;
+
       document.querySelectorAll('[data-cart-count]').forEach((b) => {
-        b.textContent = cart.item_count;
-        b.hidden = cart.item_count === 0;
-        if (b.classList && b.classList.contains('nav-banner__cart-pill')) {
-          const label = cart.item_count === 0
-            ? 'Cart'
-            : `Cart, ${cart.item_count} ${cart.item_count === 1 ? 'item' : 'items'}`;
-          b.setAttribute('aria-label', label);
-        }
+        b.textContent = count;
+        b.hidden = count === 0;
       });
+
+      document.querySelectorAll('[data-cart-pill]').forEach((pill) => {
+        const mobile = pill.querySelector('.nav-banner__cart-pill-mobile');
+        const desktop = pill.querySelector('.nav-banner__cart-pill-desktop');
+        if (mobile) mobile.textContent = count;
+        if (desktop) desktop.textContent = `Items | ${count}`;
+        pill.hidden = count === 0;
+        const label = count === 0
+          ? 'Cart'
+          : `Cart, ${count} ${count === 1 ? 'item' : 'items'}`;
+        pill.setAttribute('aria-label', label);
+      });
+
       if (typeof Alpine !== 'undefined' && Alpine.store('cart')) {
-        Alpine.store('cart').count = cart.item_count;
+        Alpine.store('cart').count = count;
       }
     })
     .catch(() => {});

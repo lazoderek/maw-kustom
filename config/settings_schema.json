@@ -1,5 +1,13 @@
 [
   {
+    "name": "theme_info",
+    "theme_name": "MAW",
+    "theme_author": "MAW",
+    "theme_version": "1.0.0",
+    "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
+    "theme_support_email": "support@example.com"
+  },
+  {
     "name": "Browser",
     "settings": [
       {
@@ -8,6 +16,15 @@
         "label": "Mobile Safari chrome",
         "default": "#271f16",
         "info": "Opaque color for mobile Safari/Android chrome and the navigation bar. Keep Navigation → Banner background on the same hex."
+      }
+    ]
+  },
+  {
+    "name": "Checkout",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Checkout logo, colors, and form styling are managed in Shopify admin under Settings → Checkout (not theme settings)."
       }
     ]
   },
