@@ -1,7 +1,10 @@
 /*
  * ------------------------------------------------------------
- * IMPORTANT: The contents of this file may be updated by the Shopify admin.
- * Assign this template to your Studio page (Online Store → Pages).
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
 {
@@ -22,7 +25,7 @@
       "settings": {
         "name": "MAW studios",
         "tagline": "workspace",
-        "bio": "<p>Operating from a shared creative workspace, MAW studios is where patterns are drafted, fabrics are handled, and each garment is cut and sewn by hand. The studio, shared with three fellow independent makers, is defined by natural light, accessible tools, and an environment built for production.</p>",
+        "bio": "<p>Operating from a shared creative workspace, MAW studios is where patterns are drafted, fabrics are handled, and each garment is cut and sewn by hand.<br/><br/>The space, shared alongside three fellow independent makers, is defined by natural light and accessible tools. It provides an environment built entirely for deliberate, focused production.</p>",
         "contact_label": "",
         "contact_url": ""
       }
