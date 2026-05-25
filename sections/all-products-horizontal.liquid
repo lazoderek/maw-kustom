@@ -1,5 +1,6 @@
 {% comment %}
-  All-products: horizontal drag-scroll on desktop; mobile matches Info/Studio — full width, vertical stack, page scroll on #MainContent.
+  All-products: vertical editorial list on desktop (image left, copy right, page scroll),
+  same split as Info/Studio. Mobile: image above copy, page scroll on #MainContent.
 {% endcomment %}
 
 <section class="all-products" data-section-id="{{ section.id }}">
@@ -120,69 +121,55 @@
     flex-direction: column;
   }
 
-  /* ── Horizontal scroll track (desktop): fixed card size, content height ── */
+  /* ── Vertical list (desktop): image left, copy right per item ── */
   .all-products__track {
     display: flex;
-    height: auto;
-    gap: 4rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    align-items: flex-start;
-    overscroll-behavior-x: contain;
-    padding-inline: 1.25rem;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: clamp(4rem, 10vh, 7rem);
     box-sizing: border-box;
   }
 
-  .all-products__track::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* ── Card: open panel like Info / Studio (no brown slab behind copy) ── */
   .all-products__card {
-    flex: 0 0 620px;
-    width: 620px;
-    min-width: 620px;
-    height: auto;
+    width: 90%;
+    max-width: 1300px;
+    min-width: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(3rem, 8vw, 8rem);
     text-decoration: none;
     background: transparent;
-    padding: 0 1.75rem;
+    padding: 0;
     box-sizing: border-box;
     position: relative;
-    transition: transform 0.3s ease;
-    user-select: none;
-    -webkit-user-select: none;
   }
 
-  /* ── The Square Image Crop ── */
   .all-products {
     width: 100%;
     height: auto;
-    padding: 3rem 3rem 0;
+    padding: clamp(2rem, 5vh, 3rem) clamp(1.5rem, 4vw, 3rem) clamp(2.5rem, 5vh, 3.5rem);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    overflow: hidden;
+    align-items: center;
+    overflow: visible;
   }
 
   .all-products__frame {
-    flex: 0 1 auto;
     width: 100%;
     min-width: 0;
     height: auto;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
   }
 
   .all-products__img-wrapper {
-    width: 100%;
-    aspect-ratio: 1 / 1;
     flex-shrink: 0;
+    width: clamp(340px, 42vw, 600px);
+    aspect-ratio: 1 / 1;
     overflow: visible;
-    margin-bottom: 1.5rem;
     position: relative;
   }
 
@@ -264,6 +251,7 @@
 
   /* ── Info: title/options row 1, description + add button row 2 ── */
   .all-products__info {
+    flex: 1;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
     grid-template-rows: auto auto;
@@ -271,8 +259,9 @@
     row-gap: 0.85rem;
     align-items: start;
     align-content: start;
-    flex-grow: 1;
-    padding: 0 0.15rem;
+    max-width: 600px;
+    padding: 1rem 0;
+    min-width: 0;
     min-height: 0;
   }
 
@@ -569,27 +558,25 @@
     }
 
     .all-products__track {
-      flex-direction: column;
-      width: 100%;
-      max-width: none;
-      height: auto;
       gap: clamp(1.75rem, 5vw, 2.75rem);
-      overflow-x: hidden;
-      overflow-y: visible;
-      padding-inline: 0;
       align-items: stretch;
     }
 
     .all-products__card {
-      flex: none;
+      flex-direction: column;
       width: 100%;
-      min-width: 0;
       max-width: 100%;
-      height: auto;
-      padding-inline: 0;
+      align-items: stretch;
+    }
+
+    .all-products__img-wrapper {
+      width: 100%;
+      margin-bottom: 1.5rem;
     }
 
     .all-products__info {
+      flex: none;
+      max-width: none;
       padding: 0;
       display: grid;
       /* Col 2 sizes to controls; description spans full width below with padding for + */
@@ -727,76 +714,8 @@
 
 <script>
   (function () {
-    const frame = document.getElementById('all-products-frame');
     const track = document.getElementById('all-products-track');
-    if (!frame || !track) return;
-
-    const mqDesktop = window.matchMedia('(min-width: 750px)');
-
-    let isDragging  = false;
-    let startX      = 0;
-    let scrollStart = 0;
-    let dragMoved   = false;
-
-    const DRAG_THRESHOLD = 6; // px before we call it a drag vs. a click
-
-    frame.addEventListener('mousedown', (e) => {
-      if (!mqDesktop.matches) return;
-      if (e.target.closest('a[href], button, select, input, textarea, label')) return;
-      isDragging  = true;
-      dragMoved   = false;
-      startX      = e.pageX;
-      scrollStart = track.scrollLeft;
-      track.style.scrollBehavior = 'auto';
-      frame.classList.add('is-dragging');
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging || !mqDesktop.matches) return;
-      const delta = startX - e.pageX;
-      if (Math.abs(delta) > DRAG_THRESHOLD) dragMoved = true;
-      track.scrollLeft = scrollStart + delta;
-    });
-
-    window.addEventListener('mouseup', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      frame.classList.remove('is-dragging');
-      track.style.scrollBehavior = 'smooth';
-    });
-
-    /* Prevent navigating to the product if the user was dragging */
-    track.querySelectorAll('a').forEach((a) => {
-      a.addEventListener('click', (e) => {
-        if (dragMoved) {
-          e.preventDefault();
-          dragMoved = false;
-        }
-      });
-    });
-
-    /* Touch: horizontal track scroll only on desktop layout */
-    let touchStartX      = 0;
-    let touchScrollStart = 0;
-
-    track.addEventListener('touchstart', (e) => {
-      if (!mqDesktop.matches) return;
-      if (e.target.closest('a[href], button, select, input, textarea, label')) return;
-      touchStartX      = e.touches[0].pageX;
-      touchScrollStart = track.scrollLeft;
-      track.style.scrollBehavior = 'auto';
-    }, { passive: true });
-
-    track.addEventListener('touchmove', (e) => {
-      if (!mqDesktop.matches) return;
-      const delta = touchStartX - e.touches[0].pageX;
-      track.scrollLeft = touchScrollStart + delta;
-    }, { passive: true });
-
-    track.addEventListener('touchend', () => {
-      if (!mqDesktop.matches) return;
-      track.style.scrollBehavior = 'smooth';
-    });
+    if (!track) return;
 
     const swipeMQ = window.matchMedia('(max-width: 749px)');
     const SWIPE_MIN = 45;

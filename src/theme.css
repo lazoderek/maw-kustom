@@ -176,20 +176,11 @@ html.page-transitions-enabled .nav-banner-stack {
   overscroll-behavior: contain;
 }
 
-/* Collection + works (desktop): center strip between top of window and nav */
+/* Collection + works: scroll vertically through editorial rows */
 @media (min-width: 750px) {
   body:has(.all-products) #MainContent.main--page-scroll,
   body:has(.works-page) #MainContent.main--page-scroll {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    /* Slight upward nudge vs true center (nav margin reads heavier below) */
-    padding-bottom: 2rem;
-  }
-
-  body:has(.all-products) .nav-banner,
-  body:has(.works-page) .nav-banner {
-    margin-top: 0.75rem;
+    padding-bottom: 1.5rem;
   }
 }
 

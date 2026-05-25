@@ -1,6 +1,6 @@
 {% comment %}
-  Works — portfolio strip matching the products page: horizontal scroll on desktop,
-  vertical stack on mobile. Frames cycle backwards (5 → 4 → 3 …).
+  Works — vertical editorial list on desktop (image left, copy right, page scroll),
+  same split as Info/Studio. Mobile: image above copy. Frames cycle backwards (5 → 4 → 3 …).
 {% endcomment %}
 
 <section class="works-page" data-section-id="{{ section.id }}">
@@ -106,70 +106,51 @@
 
   .works-page__track {
     display: flex;
-    height: auto;
-    gap: 4rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    align-items: flex-start;
-    overscroll-behavior-x: contain;
-    padding-inline: 1.25rem;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: clamp(4rem, 10vh, 7rem);
     box-sizing: border-box;
-  }
-
-  .works-page__track::-webkit-scrollbar {
-    display: none;
   }
 
   .works-page__card {
-    flex: 0 0 620px;
-    width: 620px;
-    min-width: 620px;
-    height: auto;
+    width: 90%;
+    max-width: 1300px;
+    min-width: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(3rem, 8vw, 8rem);
     background: transparent;
-    padding: 0 1.75rem;
+    padding: 0;
     box-sizing: border-box;
     position: relative;
-    user-select: none;
-    -webkit-user-select: none;
   }
 
   .works-page {
     width: 100%;
     height: auto;
-    padding: 3rem 3rem 0;
+    padding: clamp(2rem, 5vh, 3rem) clamp(1.5rem, 4vw, 3rem) clamp(2.5rem, 5vh, 3.5rem);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    overflow: hidden;
+    align-items: center;
+    overflow: visible;
   }
 
   .works-page__frame {
-    flex: 0 1 auto;
     width: 100%;
     min-width: 0;
     height: auto;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
   }
 
-  .works-page__frame.is-dragging {
-    cursor: grabbing;
-  }
-
-  .works-page__frame.is-dragging .works-page__track {
-    cursor: grabbing;
-  }
-
   .works-page__img-wrapper {
-    width: 100%;
-    aspect-ratio: 1 / 1;
     flex-shrink: 0;
+    width: clamp(340px, 42vw, 600px);
+    aspect-ratio: 1 / 1;
     overflow: visible;
-    margin-bottom: 1.5rem;
     position: relative;
   }
 
@@ -248,10 +229,13 @@
   .works-page__arrow--next { right: 0.6rem; }
 
   .works-page__info {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 0.65rem;
-    padding: 0 0.15rem;
+    max-width: 600px;
+    padding: 1rem 0;
     min-width: 0;
     user-select: text;
     -webkit-user-select: text;
@@ -334,24 +318,27 @@
     }
 
     .works-page__track {
-      flex-direction: column;
-      width: 100%;
-      max-width: none;
-      height: auto;
       gap: clamp(1.75rem, 5vw, 2.75rem);
-      overflow-x: hidden;
-      overflow-y: visible;
-      padding-inline: 0;
       align-items: stretch;
     }
 
     .works-page__card {
-      flex: none;
+      flex-direction: column;
       width: 100%;
-      min-width: 0;
       max-width: 100%;
-      height: auto;
-      padding-inline: 0;
+      align-items: stretch;
+    }
+
+    .works-page__img-wrapper {
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    .works-page__info {
+      flex: none;
+      max-width: none;
+      padding: 0 0.15rem;
+      justify-content: flex-start;
     }
 
     .works-page__img {
@@ -381,61 +368,11 @@
 
 <script>
   (function () {
-    const frame = document.getElementById('works-page-frame');
     const track = document.getElementById('works-page-track');
-    if (!frame || !track) return;
+    if (!track) return;
 
-    const mqDesktop = window.matchMedia('(min-width: 750px)');
     const swipeMQ = window.matchMedia('(max-width: 749px)');
     const SWIPE_MIN = 45;
-
-    let isDragging = false;
-    let startX = 0;
-    let scrollStart = 0;
-    const DRAG_THRESHOLD = 6;
-
-    frame.addEventListener('mousedown', (e) => {
-      if (!mqDesktop.matches) return;
-      if (e.target.closest('button, a[href], input, textarea, select, label')) return;
-      isDragging = true;
-      startX = e.pageX;
-      scrollStart = track.scrollLeft;
-      track.style.scrollBehavior = 'auto';
-      frame.classList.add('is-dragging');
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging || !mqDesktop.matches) return;
-      track.scrollLeft = scrollStart + (startX - e.pageX);
-    });
-
-    window.addEventListener('mouseup', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      frame.classList.remove('is-dragging');
-      track.style.scrollBehavior = 'smooth';
-    });
-
-    let touchStartX = 0;
-    let touchScrollStart = 0;
-
-    track.addEventListener('touchstart', (e) => {
-      if (!mqDesktop.matches) return;
-      if (e.target.closest('button, a[href], input, textarea, select, label')) return;
-      touchStartX = e.touches[0].pageX;
-      touchScrollStart = track.scrollLeft;
-      track.style.scrollBehavior = 'auto';
-    }, { passive: true });
-
-    track.addEventListener('touchmove', (e) => {
-      if (!mqDesktop.matches) return;
-      track.scrollLeft = touchScrollStart + (touchStartX - e.touches[0].pageX);
-    }, { passive: true });
-
-    track.addEventListener('touchend', () => {
-      if (!mqDesktop.matches) return;
-      track.style.scrollBehavior = 'smooth';
-    });
 
     track.querySelectorAll('.works-page__img-wrapper').forEach((wrapper) => {
       const imgs = wrapper.querySelectorAll('.works-page__img');
